@@ -4,5 +4,8 @@ model:
 
 mcp:
   - name: redwood
-    command: /home/doug/workspace/ai/redwood/server.sh
+    command: ./server.sh
     args: []
+
+# Safety valve, in case of looping
+max_model_calls: 20

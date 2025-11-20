@@ -7,8 +7,6 @@ from rich.markdown import Markdown
 import mcp_client
 import pprint
 
-
-
 async def main():
     console = Console()
 
@@ -37,15 +35,10 @@ async def main():
     )
 
     contents = []
-    counter = 0
+    model_calls = 0
     ask_user = True
 
     while True:
-
-        #  Safety
-        counter += 1
-        if counter > 4:
-            break
         
         if ask_user:
             user_input = input(">> ")
@@ -54,12 +47,20 @@ async def main():
             # Append user output to contents
             contents.append(genai.types.Content(role="user", parts=[genai.types.Part(text=user_input)]))
         
+        # Safety valve
+        if model_calls >= config.get("max_model_calls", 0):
+            print("Max model calls reached. This is a safety valve to catch costly looping")
+            break
+        model_calls += 1
+        
         # Call LLM
         response = client.models.generate_content(
             model = model_name,
             contents = contents,
             config = gemini_config
         )
+        
+        
         # Append LLM output to contents
         contents.append(response.candidates[0].content)
 
