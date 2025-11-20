@@ -6,8 +6,6 @@ import yaml
 
 class MCPClient:
 
-
-
     def __init__(self, config_file: str):
         # Load config file
         with open(config_file, "r") as f:
