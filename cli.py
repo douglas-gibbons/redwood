@@ -1,28 +1,95 @@
+import asyncio
+import base64
 import os
-import google.generativeai as genai
+from google import genai
 import yaml
 from rich.console import Console
 from rich.markdown import Markdown
+import mcp_client
+import pprint
 
-console = Console()
 
-# Get API key from environment variable
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-genai.configure(api_key=GOOGLE_API_KEY)
 
-# Load config file
-with open("config.yaml", "r") as f:
-    config = yaml.safe_load(f)
+async def main():
+    console = Console()
 
-# Gemini model name
-model_name = config["model"]["name"]
+    # Get API key from environment variable
+    GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+    client = genai.Client(api_key=GOOGLE_API_KEY)
 
-print(f"Using model: {model_name}")
+    # Load config file
+    with open("config.yaml", "r") as f:
+        config = yaml.safe_load(f)
 
-model = genai.GenerativeModel(model_name)
-chat = model.start_chat(history=[])
+    mcpc = mcp_client.MCPClient("config.yaml")
+    
+    # Gemini model name
+    model_name = config["model"]["name"]
+    print(f"Using model: {model_name}")
 
-while True:
-    val = input("> ")
-    response = chat.send_message(val)
-    console.print(response.text)
+    tools = await mcpc.list_tools()
+    # pprint.pprint(tools)
+
+    gemini_config = genai.types.GenerateContentConfig(
+        tools = tools,
+        automatic_function_calling=genai.types.AutomaticFunctionCallingConfig(
+            disable=True
+        ),
+    )
+
+    contents = []
+    counter = 0
+    ask_user = True
+
+    while True:
+
+        #  Safety
+        counter += 1
+        if counter > 4:
+            break
+        
+        if ask_user:
+            user_input = input(">> ")
+            if user_input == "exit":
+                break
+            # Append user output to contents
+            contents.append(genai.types.Content(role="user", parts=[genai.types.Part(text=user_input)]))
+        
+        # Call LLM
+        response = client.models.generate_content(
+            model = model_name,
+            contents = contents,
+            config = gemini_config
+        )
+        # Append LLM output to contents
+        contents.append(response.candidates[0].content)
+
+        # Deal with LLM output
+        for part in response.candidates[0].content.parts:
+            
+            #  LLM requested function calls
+            if part.function_call:
+                tool_name = part.function_call.name
+                response = await mcpc.execute_tool(tool_name, part.function_call.args)
+                function_response_part = genai.types.Part.from_function_response(
+                    name = tool_name,
+                    response=response.structured_content
+                )
+                resp = genai.types.Content(role="function", parts=[function_response_part])
+                contents.append(resp)
+                ask_user = False
+
+            # LLM Text output
+            elif part.text:
+                console.print(Markdown(part.text))
+                ask_user = True
+            else:
+                print("Unknown part")
+                pprint.pprint(response, depth=20)
+                break
+            
+    pprint.pprint(contents)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

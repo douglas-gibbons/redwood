@@ -1,3 +1,8 @@
 model:
   # name: gemini-2.5-pro
   name: gemini-2.5-flash
+
+mcp:
+  - name: redwood
+    command: /home/doug/workspace/ai/redwood/server.sh
+    args: []
