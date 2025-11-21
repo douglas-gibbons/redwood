@@ -16,13 +16,17 @@ logging.basicConfig(
 async def main():
     console = Console()
 
-    # Get API key from environment variable
-    GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-    client = genai.Client(api_key=GOOGLE_API_KEY)
-
     # Load config file
-    with open("config.yaml", "r") as f:
+    with open(os.path.expanduser("~/.config/redwood.yaml"), "r") as f:
         config = yaml.safe_load(f)
+
+    if "model" in config and "api_key" in config["model"]:
+        api_key = config["model"]["api_key"]
+    else:
+        raise("API Key missing from configuration file")
+
+    client = genai.Client(api_key=api_key)
+
 
     mcpc = mcp_client.MCPClient("config.yaml")
     

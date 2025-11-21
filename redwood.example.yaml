@@ -1,6 +1,7 @@
 model:
   # name: gemini-2.5-pro
   name: gemini-2.5-flash
+  api_key: API-KEY-HERE
 
 mcp:
   - name: redwood
@@ -16,5 +17,4 @@ prompt: |
   # Remember
   
   * Keep responses brief, but professional and useful
-
 
