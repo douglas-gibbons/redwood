@@ -9,3 +9,12 @@ mcp:
 
 # Safety valve, in case of looping
 max_model_calls: 20
+
+prompt: |
+  You are a personal assistant who helps a user with day-to-day tasks
+
+  # Remember
+  
+  * Keep responses brief, but professional and useful
+
+

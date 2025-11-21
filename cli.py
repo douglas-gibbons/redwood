@@ -6,6 +6,12 @@ from rich.console import Console
 from rich.markdown import Markdown
 import mcp_client
 import pprint
+import logging
+
+logging.basicConfig(
+    level=logging.WARNING,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 
 async def main():
     console = Console()
@@ -25,16 +31,25 @@ async def main():
     print(f"Using model: {model_name}")
 
     tools = await mcpc.list_tools()
-    # pprint.pprint(tools)
 
+    # Chat contents
+    contents = []
+
+    # Set initial prompt
+    # Gemini only has user and system prompts
+    if "prompt" in config:
+        prompt = config["prompt"]
+        contents.append(genai.types.Content(role="user", parts=[genai.types.Part(text=prompt)]))
+        contents.append(genai.types.Content(role="model", parts=[genai.types.Part(text="Understood")]))
+
+    
     gemini_config = genai.types.GenerateContentConfig(
         tools = tools,
         automatic_function_calling=genai.types.AutomaticFunctionCallingConfig(
             disable=True
         ),
     )
-
-    contents = []
+    
     model_calls = 0
     ask_user = True
 
@@ -42,7 +57,7 @@ async def main():
         
         if ask_user:
             user_input = input(">> ")
-            if user_input == "exit":
+            if user_input == "exit" or user_input == "/exit":
                 break
             # Append user output to contents
             contents.append(genai.types.Content(role="user", parts=[genai.types.Part(text=user_input)]))

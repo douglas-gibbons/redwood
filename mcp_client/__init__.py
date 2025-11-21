@@ -1,14 +1,16 @@
 import pprint
 import re
-# from fastmcp import Client
-from fastmcp import Client, FastMCP
+from fastmcp import Client
 from fastmcp.client.transports import StdioTransport
 import yaml
+
 
 class MCPClient:
 
     def __init__(self, config_file: str):
         # Load config file
+
+
         with open(config_file, "r") as f:
             self.config = yaml.safe_load(f)
 
