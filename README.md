@@ -25,9 +25,12 @@ Run
 npx @modelcontextprotocol/inspector `pwd`/server.sh
 ```
 
-# Running the CLI chat interface
+# Redwood CLI chat interface
 
 The CPI application is a simple chat interface for use with Gemini.
+
+
+## Running
 
 First create a configuration file in `~/.config/redwood.yaml`:
 

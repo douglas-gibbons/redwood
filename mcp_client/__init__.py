@@ -1,14 +1,18 @@
-import os
 import re
 from fastmcp import Client
-from fastmcp.client.transports import StdioTransport
-import yaml
+from fastmcp.client.transports import StdioTransport, StreamableHttpTransport
 
 class Server:
-    def __init__(self, name, command, args):
+    def __init__(self, name, command, args, url, headers):
         self.name = name
+
+        # STDIO transport parameters
         self.command = command
         self.args = args
+
+        # HTTP transport parameters
+        self.url = url
+        self.headers = headers
 
 class MCPClient:
     
@@ -20,11 +24,17 @@ class MCPClient:
         self.clients = {}
         for server in self.servers:
             
-            transport = StdioTransport(
-                command = server.command,
-                args = server.args
-            )
-    
+            if server.command is not None:
+                transport = StdioTransport(
+                    command = server.command,
+                    args = server.args
+                )
+            else:
+                transport = StreamableHttpTransport(
+                    url = server.url,
+                    headers = server.headers
+                )
+
             clean_name = self.sanitize_name(server.name)
             self.clients[clean_name] = Client(transport)
         
