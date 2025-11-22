@@ -7,6 +7,9 @@ from rich.markdown import Markdown
 import mcp_client
 import pprint
 import logging
+from config import Config
+
+DEFAULT_CONFIG_FILE = os.path.expanduser("~/.config/redwood.yaml")
 
 logging.basicConfig(
     level=logging.WARNING,
@@ -17,21 +20,18 @@ async def main():
     console = Console()
 
     # Load config file
-    with open(os.path.expanduser("~/.config/redwood.yaml"), "r") as f:
-        config = yaml.safe_load(f)
+    config = Config(DEFAULT_CONFIG_FILE)
 
-    if "model" in config and "api_key" in config["model"]:
-        api_key = config["model"]["api_key"]
-    else:
+    if not config.exists("model.api_key"):
         raise("API Key missing from configuration file")
 
-    client = genai.Client(api_key=api_key)
+    client = genai.Client(api_key=config.model.api_key)
 
 
-    mcpc = mcp_client.MCPClient("config.yaml")
+    mcpc = mcp_client.MCPClient(config.mcp)
     
     # Gemini model name
-    model_name = config["model"]["name"]
+    model_name = config.model.name
     print(f"Using model: {model_name}")
 
     tools = await mcpc.list_tools()
@@ -41,8 +41,8 @@ async def main():
 
     # Set initial prompt
     # Gemini only has user and system prompts
-    if "prompt" in config:
-        prompt = config["prompt"]
+    if config.exists("prompt"):
+        prompt = config.prompt
         contents.append(genai.types.Content(role="user", parts=[genai.types.Part(text=prompt)]))
         contents.append(genai.types.Content(role="model", parts=[genai.types.Part(text="Understood")]))
 
@@ -67,7 +67,7 @@ async def main():
             contents.append(genai.types.Content(role="user", parts=[genai.types.Part(text=user_input)]))
         
         # Safety valve
-        if model_calls >= config.get("max_model_calls", 0):
+        if model_calls >= config.max_model_calls:
             print("Max model calls reached. This is a safety valve to catch costly looping")
             break
         model_calls += 1

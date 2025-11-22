@@ -4,25 +4,28 @@ from fastmcp import Client
 from fastmcp.client.transports import StdioTransport
 import yaml
 
+class Server:
+    def __init__(self, name, command, args):
+        self.name = name
+        self.command = command
+        self.args = args
 
 class MCPClient:
+    
+    def __init__(self, servers: list[Server]):
 
-    def __init__(self, config_file: str):
-        
-        # Load config file
-        with open(os.path.expanduser("~/.config/redwood.yaml"), "r") as f:
-            self.config = yaml.safe_load(f)
+        self.servers = servers
 
         # Set up the clients
         self.clients = {}
-        for mcp_server in self.config["mcp"]:
+        for server in self.servers:
             
             transport = StdioTransport(
-                command = mcp_server["command"],
-                args = mcp_server["args"]
+                command = server.command,
+                args = server.args
             )
-
-            clean_name = self.sanitize_name(mcp_server["name"])
+    
+            clean_name = self.sanitize_name(server.name)
             self.clients[clean_name] = Client(transport)
         
     # Returns tuple of server, tool 
@@ -32,8 +35,8 @@ class MCPClient:
 
     async def list_tools(self):
         all_tools = []
-        for mcp_server in self.config["mcp"]:
-            clean_name = self.sanitize_name(mcp_server["name"])
+        for server in self.servers:
+            clean_name = self.sanitize_name(server.name)
             client = self.clients[clean_name]
             async with client:
                 tools = await client.list_tools()

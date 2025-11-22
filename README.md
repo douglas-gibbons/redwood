@@ -41,7 +41,7 @@ Then edit the configuration to match your requirements. Don't forget to change t
 To run:
 
 ```
-./cli.sh
+make cli
 ```
 
 Type "exit" to exit.

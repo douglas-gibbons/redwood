@@ -1,0 +1,14 @@
+model:
+  # name: gemini-2.5-pro
+  name: gemini-2.5-flash
+  api_key: TEST-API-KEY
+
+mcp:
+  - name: redwood
+    command: ./server.sh
+    args: []
+
+# Safety valve, in case of looping
+max_model_calls: 20
+
+prompt: Test prompt content
