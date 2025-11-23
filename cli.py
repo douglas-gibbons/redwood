@@ -28,7 +28,7 @@ async def main():
     client = genai.Client(api_key=config.model.api_key)
 
 
-    mcpc = mcp_client.MCPClient(config.mcp)
+    mcpc = mcp_client.MCPClient(servers=config.mcp, use_redwood_tools=config.use_redwood_tools)
     
     # Gemini model name
     model_name = config.model.name

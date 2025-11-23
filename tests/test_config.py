@@ -1,5 +1,5 @@
 import unittest
-from redwood.config import Config
+from  ..config import Config
 import os
 
 def test_config_loading_and_access():

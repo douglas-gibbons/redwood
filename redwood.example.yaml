@@ -3,16 +3,21 @@ model:
   name: gemini-2.5-flash
   api_key: API-KEY-HERE
 
+# Use internal redwood tools
+use_redwood_tools: true
+
 mcp:
 
-  - name: redwood
-    command: ./server.sh
-    args: []
+  - name: sequentialthinking
+    command: npx
+    args:
+      - "-y"
+      - "@modelcontextprotocol/server-sequential-thinking"
 
-  - name: http-example
-    url: https://api.example.com/v1/stream
-    headers:
-      Authorization: Bearer API-KEY-HERE
+  # - name: http-example
+  #   url: https://api.example.com/v1/stream
+  #   headers:
+  #     Authorization: Bearer API-KEY-HERE
 
 
 # Safety valve, in case of looping
@@ -24,4 +29,6 @@ prompt: |
   # Remember
   
   * Keep responses brief, but professional and useful
-
+  * Use the tools available to you via MCP to answer questions and perform tasks
+  * If you are unsure about something, use the tools to find out more information
+  * Always think step-by-step about how to use the tools to achieve the user's goals

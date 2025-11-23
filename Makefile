@@ -6,10 +6,10 @@ help:              ## show this help.
 .PHONY: test
 .ONESHELL:
 test:              ## run the test suite.
-	export PYTHONPATH="../:$$PYTHONPATH"
 	uv run pytest
 
 .PHONY: cli
+.ONESHELL:
 cli:               ## run the cli
 	uv run cli.py
 
