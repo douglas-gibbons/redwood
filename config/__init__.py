@@ -21,10 +21,13 @@ class Config:
         self._munch = Munch.fromDict(self._config)
     
     def __getattr__(self, name):
-        if name in self._munch:
-            return self._munch[name]
-        else:
-            raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+        try:
+            if name in self._munch:
+                return self._munch[name]
+            else:
+                return None
+        except (KeyError, AttributeError):
+            return None
 
     def exists(self, path: str) -> bool:
         parts = path.split(".")

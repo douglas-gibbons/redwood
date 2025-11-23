@@ -3,12 +3,13 @@ from fastmcp import Client
 from fastmcp.client.transports import StdioTransport, StreamableHttpTransport
 
 class Server:
-    def __init__(self, name, command, args, url, headers):
+    def __init__(self, name, command, args, env, url, headers):
         self.name = name
 
         # STDIO transport parameters
         self.command = command
         self.args = args
+        self.env = env
 
         # HTTP transport parameters
         self.url = url
@@ -27,7 +28,8 @@ class MCPClient:
             if server.command is not None:
                 transport = StdioTransport(
                     command = server.command,
-                    args = server.args
+                    args = server.args,
+                    env = server.env if "env" in server else {}
                 )
             else:
                 transport = StreamableHttpTransport(
