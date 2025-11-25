@@ -24,16 +24,10 @@ class Server:
 
 class MCPClient:
     
-    def __init__(self, servers: list[Server], use_redwood_tools: bool = True):
+    def __init__(self, servers: list[Server]):
 
         self.servers = servers
-        self.use_redwood_tools = use_redwood_tools
         self.clients = {}
-
-        # Set up local tools
-        if self.use_redwood_tools:
-            print("Using local tools")
-            self.clients["redwood"] = Client(mcp)
             
         # Set up other servers
         for server in self.servers:
@@ -41,7 +35,7 @@ class MCPClient:
             if server.command is not None:
                 transport = StdioTransport(
                     command = server.command,
-                    args = server.args,
+                    args = server.args if "args" in server else [],
                     env = server.env if "env" in server else {}
                 )
             elif server.url is not None:
@@ -52,8 +46,7 @@ class MCPClient:
 
             clean_name = self.sanitize_name(server.name)
             self.clients[clean_name] = Client(transport)
-                # Set up the redwood tools
-
+            
     # Returns tuple of server, tool 
     def get_tool_name(self,full_tool_name):
         n = full_tool_name.split("_", 1)

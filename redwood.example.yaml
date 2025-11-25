@@ -3,8 +3,6 @@ model:
   name: gemini-2.5-flash
   api_key: API-KEY-HERE
 
-# Use internal redwood tools
-use_redwood_tools: true
 
 mcp:
 
@@ -13,6 +11,8 @@ mcp:
     args:
       - "-y"
       - "@modelcontextprotocol/server-sequential-thinking"
+  - name: redwood
+    command: ./server.sh
 
   # - name: http-example
   #   url: https://api.example.com/v1/stream
@@ -23,6 +23,10 @@ mcp:
 # Safety valve, in case of looping
 max_model_calls: 20
 
+logging:
+  level: INFO
+  file: /tmp/redwood.log
+
 prompt: |
   You are a personal assistant who helps a user with day-to-day tasks
 
@@ -32,3 +36,5 @@ prompt: |
   * Use the tools available to you via MCP to answer questions and perform tasks
   * If you are unsure about something, use the tools to find out more information
   * Always think step-by-step about how to use the tools to achieve the user's goals
+
+

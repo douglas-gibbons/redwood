@@ -1,9 +1,9 @@
 import asyncio
 import os
 from google import genai
-import yaml
 from rich.console import Console
 from rich.markdown import Markdown
+import config
 import mcp_client
 import pprint
 import logging
@@ -11,12 +11,12 @@ from config import Config
 
 DEFAULT_CONFIG_FILE = os.path.expanduser("~/.config/redwood.yaml")
 
-logging.basicConfig(
-    level=logging.WARNING,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+logging.getLogger().handlers.clear()
+logger = logging.getLogger(__name__)
 
 async def main():
+    logger.info("Starting redwood main")
+
     console = Console()
 
     # Load config file
@@ -25,10 +25,15 @@ async def main():
     if not config.exists("model.api_key"):
         raise("API Key missing from configuration file")
 
+    logging.basicConfig(
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        level=config.logging.level,
+        filemode='a',
+        filename=config.logging.file
+    )
+
     client = genai.Client(api_key=config.model.api_key)
-
-
-    mcpc = mcp_client.MCPClient(servers=config.mcp, use_redwood_tools=config.use_redwood_tools)
+    mcpc = mcp_client.MCPClient(servers=config.mcp)
     
     # Gemini model name
     model_name = config.model.name
@@ -56,6 +61,9 @@ async def main():
     
     model_calls = 0
     ask_user = True
+
+    # logging.getLogger().handlers.clear()
+    logger.info("Entering main loop")
 
     while True:
         
@@ -107,8 +115,7 @@ async def main():
                 pprint.pprint(response, depth=20)
                 break
             
-    pprint.pprint(contents)
-
+    logger.info(f"chat contents: {contents}")
 
 if __name__ == "__main__":
     asyncio.run(main())
