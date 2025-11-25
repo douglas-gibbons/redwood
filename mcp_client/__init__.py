@@ -9,9 +9,18 @@ import tools.mcptime
 import tools.storage
 import tools.command
 
+class ToolResponse:
+    def __init__(self, message_type, message):
+        self.structured_content = {
+            "message_type": message_type,
+            "message": message
+        }
+
+
 class Server:
-    def __init__(self, name, command, args, env, url, headers):
+    def __init__(self, name, ask, command, args, env, url, headers):
         self.name = name
+        self.ask = ask
 
         # STDIO transport parameters
         self.command = command
@@ -67,11 +76,28 @@ class MCPClient:
 
     async def execute_tool(self, full_tool_name, args):
         server_name, tool_name = self.get_tool_name(full_tool_name)
- 
-        client = self.clients[server_name]
-        async with client:
-            response = await client.call_tool(tool_name, args)
-        return response
-    
+        if self.can_execute_tool(full_tool_name, args):
+            client = self.clients[server_name]
+            async with client:
+                response = await client.call_tool(tool_name, args)
+            return response
+        else:
+            return ToolResponse("error", "User denied execution of tool " + full_tool_name)
+
     def sanitize_name(self, name):
         return re.sub(r"[^a-zA-Z0-9]", "", name)
+
+    def can_execute_tool(self, full_tool_name, args):
+        server_name, tool_name = self.get_tool_name(full_tool_name)
+        for server in self.servers:
+            if self.sanitize_name(server.name) == server_name:
+                if server.ask is None or server.ask == True:
+                    print("\033[92mExecute tool", server_name, tool_name, "with args", args, "?\033[91m (Y/n)\033[0m")
+                    user_input = input(">> ")
+                    if user_input.lower() == "y" or user_input.lower() == "yes" or user_input == "":
+                        return True
+                    else:
+                        return False
+                else:
+                    return True
+        return False

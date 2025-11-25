@@ -7,18 +7,20 @@ model:
 mcp:
 
   - name: sequentialthinking
+    ask: false # ask the user before running tools
     command: npx
     args:
       - "-y"
       - "@modelcontextprotocol/server-sequential-thinking"
+
   - name: redwood
+    ask: true # ask the user before running tools
     command: ./server.sh
 
   # - name: http-example
   #   url: https://api.example.com/v1/stream
   #   headers:
   #     Authorization: Bearer API-KEY-HERE
-
 
 # Safety valve, in case of looping
 max_model_calls: 20
