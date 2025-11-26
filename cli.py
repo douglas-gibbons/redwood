@@ -71,6 +71,25 @@ async def main():
             user_input = input(">> ")
             if user_input == "exit" or user_input == "/exit":
                 break
+            
+            if user_input == "tools" or user_input == "/tools":
+                console.print("[bold]Available Tools:[/bold]")
+                tools_by_server = {}
+                for tool in tools:
+                    server_name, tool_name = mcpc.get_tool_name(tool.name)
+                    if server_name not in tools_by_server:
+                        tools_by_server[server_name] = []
+                    tools_by_server[server_name].append((tool_name, tool))
+                
+                for server_name, server_tools in tools_by_server.items():
+                    console.print(f"\n[bold magenta]Server: {server_name}[/bold magenta]")
+                    for tool_name, tool in server_tools:
+                        console.print(f"  [bold cyan]{tool_name}[/bold cyan]")
+                        if tool.description:
+                            console.print(f"    {tool.description}")
+                        if tool.inputSchema:
+                            console.print(f"    Args: {tool.inputSchema}")
+                continue
             # Append user output to contents
             contents.append(genai.types.Content(role="user", parts=[genai.types.Part(text=user_input)]))
         

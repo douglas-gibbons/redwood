@@ -47,4 +47,5 @@ To run:
 make cli
 ```
 
+Type "tools" to list available tools.
 Type "exit" to exit.
