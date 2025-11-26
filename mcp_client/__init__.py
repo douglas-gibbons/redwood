@@ -1,8 +1,6 @@
 import re
 from fastmcp import Client
 from fastmcp.client.transports import StdioTransport, StreamableHttpTransport
-from mcp.server.fastmcp import FastMCP
-from server import mcp
 
 # Import tools to register them with MCP
 import tools.mcptime
