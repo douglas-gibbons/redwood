@@ -7,13 +7,17 @@ import tools.mcptime
 import tools.storage
 import tools.command
 
+# Returns tuple of server, tool 
+def get_tool_name(full_tool_name):
+    n = full_tool_name.split("_", 1)
+    return n[0], n[1]
+
 class ToolResponse:
     def __init__(self, message_type, message):
         self.structured_content = {
             "message_type": message_type,
             "message": message
         }
-
 
 class Server:
     def __init__(self, name, ask, command, args, env, url, headers):
@@ -54,11 +58,6 @@ class MCPClient:
             clean_name = self.sanitize_name(server.name)
             self.clients[clean_name] = Client(transport)
             
-    # Returns tuple of server, tool 
-    def get_tool_name(self,full_tool_name):
-        n = full_tool_name.split("_", 1)
-        return n[0], n[1]
-
     async def list_tools(self):
 
         all_tools = []
@@ -73,7 +72,7 @@ class MCPClient:
         return all_tools
 
     async def execute_tool(self, full_tool_name, args):
-        server_name, tool_name = self.get_tool_name(full_tool_name)
+        server_name, tool_name = get_tool_name(full_tool_name)
         if self.can_execute_tool(full_tool_name, args):
             client = self.clients[server_name]
             async with client:
@@ -86,7 +85,7 @@ class MCPClient:
         return re.sub(r"[^a-zA-Z0-9]", "", name)
 
     def can_execute_tool(self, full_tool_name, args):
-        server_name, tool_name = self.get_tool_name(full_tool_name)
+        server_name, tool_name = get_tool_name(full_tool_name)
         for server in self.servers:
             if self.sanitize_name(server.name) == server_name:
                 if server.ask is None or server.ask == True:
