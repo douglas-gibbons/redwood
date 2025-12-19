@@ -1,6 +1,7 @@
 import re
 from fastmcp import Client
 from fastmcp.client.transports import StdioTransport, StreamableHttpTransport
+from fastmcp.client.auth import OAuth
 
 # Import tools to register them with MCP
 import tools.mcptime
@@ -54,29 +55,38 @@ class MCPClient:
 
         self.servers = servers
         self.clients = {}
-            
+        
+        
         # Set up other servers
-        for server in self.servers:           
+        for server in self.servers:
+            
+            clean_name = self.sanitize_name(server.name)
+            
+            # STDIO Transport
             if server.command is not None:
                 transport = StdioTransport(
                     command = server.command,
-                    args = server.args if server.args else [],
-                    env = server.env if server.env else {}
+                    args = server.args,
+                    env = server.env
                 )
+                self.clients[clean_name] = Client(transport)
+            
+            # HTTP Transport
             elif server.url is not None:
                 transport = StreamableHttpTransport(
                     url = server.url,
-                    headers = server.headers
+                    headers = server.headers,
+                    auth = OAuth(mcp_url = server.url)
                 )
-
-            clean_name = self.sanitize_name(server.name)
-            self.clients[clean_name] = Client(transport)
+                self.clients[clean_name] = Client(transport)
+                
             
     async def list_tools(self):
 
         all_tools = []
 
         for name, client in self.clients.items():
+
             async with client:
                 tools = await client.list_tools()
                 for tool in tools:
