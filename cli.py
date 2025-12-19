@@ -52,7 +52,13 @@ async def main():
     )
 
     client = genai.Client(api_key=config.model.api_key)
-    mcpc = mcp_client.MCPClient(servers=config.mcp)
+
+    mcp_servers = []
+    for server_config in config.mcp:
+        server = mcp_client.dict_to_server(server_config)
+        mcp_servers.append(server)
+    
+    mcpc = mcp_client.MCPClient(servers=mcp_servers)
     
     # Gemini model name
     model_name = config.model.name

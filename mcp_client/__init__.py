@@ -6,6 +6,10 @@ from fastmcp.client.transports import StdioTransport, StreamableHttpTransport
 import tools.mcptime
 import tools.storage
 import tools.command
+import logging
+
+logging.getLogger().handlers.clear()
+logger = logging.getLogger(__name__)
 
 # Returns tuple of server, tool 
 def get_tool_name(full_tool_name):
@@ -18,6 +22,17 @@ class ToolResponse:
             "message_type": message_type,
             "message": message
         }
+
+def dict_to_server(d):
+    return Server(
+            name=d.get("name"),
+            ask=d.get("ask", False),
+            command=d.get("command", None),
+            args=d.get("args", []),
+            env=d.get("env", {}),
+            url=d.get("url", None),
+            headers=d.get("headers", {})
+    )
 
 class Server:
     def __init__(self, name, ask, command, args, env, url, headers):
@@ -41,13 +56,12 @@ class MCPClient:
         self.clients = {}
             
         # Set up other servers
-        for server in self.servers:
-            
+        for server in self.servers:           
             if server.command is not None:
                 transport = StdioTransport(
                     command = server.command,
-                    args = server.args if "args" in server else [],
-                    env = server.env if "env" in server else {}
+                    args = server.args if server.args else [],
+                    env = server.env if server.env else {}
                 )
             elif server.url is not None:
                 transport = StreamableHttpTransport(
@@ -79,6 +93,7 @@ class MCPClient:
                 response = await client.call_tool(tool_name, args)
             return response
         else:
+            logger.debug("User denied execution of tool " + full_tool_name)
             return ToolResponse("error", "User denied execution of tool " + full_tool_name)
 
     def sanitize_name(self, name):
