@@ -11,8 +11,6 @@ Requirements:
 
 - uv (`brew install uv`)
 
-The first time you run `run.sh` it will set up the python virtual environment and install the packages it needs.
-
 ## Adding to an Agent
 
 Add server.sh as an STDIO MCP server
