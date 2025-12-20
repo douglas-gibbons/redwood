@@ -1,5 +1,12 @@
 # Redwood
 
+Redwood is a Python project that implements a Model Context Protocol (MCP) server and a CLI client for Gemini. It is designed to facilitate the development and testing of MCP tools and agentic workflows, providing a simple chat interface and a collection of helper functions.
+
+<p align="center">
+  <img src="screenshot.png" alt="Redwood Screenshot" width="60%">
+</p>
+
+
 ## Requirements
 
 This python app requires:
@@ -22,10 +29,10 @@ The CLI application is a simple chat interface for use with Gemini.
 
 ### Configuration
 
-Copy the example configuration file into your $HOME/.config directory:
+Copy the [example configuration file](redwood.example.yaml) into your $HOME/.config directory:
 
 ```
-cp redwood.example.yaml ~/.config/redwood.yaml
+cp redwood.example.yaml $HOME/.config/redwood.yaml
 ```
 
 Then edit the configuration to match your requirements:
@@ -67,7 +74,15 @@ npx @modelcontextprotocol/inspector `pwd`/server.sh
 
 # Contributing
 
-Contributions are welcome! Please follow these steps:
+Contributions are welcome!
+
+## Reporting Issues
+
+If you find a bug or have a feature request, please open an issue in the repository. Provide as much detail as possible to help us understand and resolve the issue.
+
+## Pull Requests
+
+Please follow these steps to contribute code:
 
 1.  Fork the repository
 2.  Create a feature branch (`git checkout -b feature/amazing-feature`)
