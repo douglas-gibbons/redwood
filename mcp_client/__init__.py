@@ -82,7 +82,7 @@ class MCPClient:
                 )
                 self.clients[clean_name] = Client(transport)
             
-            # HTTP Transport
+            # HTTP or SSE Transport
             elif server.url is not None:
                 if server.protocol == "sse":
                     transport = SSETransport(
@@ -126,28 +126,12 @@ class MCPClient:
                 logger.debug("Executing tool " + full_tool_name + " with args " + str(args))
                 response = await client.call_tool(tool_name, args)
                 logger.debug("Received response from tool " + full_tool_name + ": " + str(response))
-
-                if response.structured_content is not None:
-                    logger.debug("Tool " + full_tool_name + " returned structured content")
-                    return response.structured_content
                 
-                elif response.content is not None and len(response.content) > 0 and response.content[0].text is not None:
-                    logger.debug("Tool " + full_tool_name + " returned content")
-                    try:
-                        content = json.loads(response.content[0].text)
-                    except json.JSONDecodeError:
-                        logger.debug("Tool " + full_tool_name + " returned non-JSON content")
-                        return {"result": response.content[0].text}
-                    if isinstance(content, dict):
-                        return content
-                    elif isinstance(content, list):
-                        return {"result": content}
-                    else:
-                        logger.debug("Tool " + full_tool_name + " returned non-dict/list content")
-                        return {}
+                if response.content is not None and len(response.content) > 0 and response.content[0].text is not None:
+                    return {"result": response.content[0].text}
                 else:
                     logger.debug("Tool " + full_tool_name + " returned no content")
-                    return {"result": ""}
+                    return toolResponse("error", "tool returned no content")
             
         else:
             logger.debug("User denied execution of tool " + full_tool_name)
