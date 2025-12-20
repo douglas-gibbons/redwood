@@ -3,11 +3,12 @@ import os
 from google import genai
 from rich.console import Console
 from rich.markdown import Markdown
-import config
 import mcp_client
 import pprint
 import logging
 from config import Config
+import sys
+import readline # needed for input() to write to stdout instead of stderr
 
 DEFAULT_CONFIG_FILE = os.path.expanduser("~/.config/redwood.yaml")
 
@@ -58,7 +59,7 @@ async def main():
         server = mcp_client.dict_to_server(server_config)
         mcp_servers.append(server)
     
-    mcpc = mcp_client.MCPClient(servers=mcp_servers)
+    mcpc = mcp_client.MCPClient(servers=mcp_servers, log_file=config.logging.file)
     
     # Gemini model name
     model_name = config.model.name
@@ -92,6 +93,7 @@ async def main():
     while True:
         
         if ask_user:
+            sys.stdout.flush()
             user_input = input(">> ")
             if user_input == "exit" or user_input == "/exit":
                 break

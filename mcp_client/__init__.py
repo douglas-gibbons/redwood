@@ -1,15 +1,17 @@
-import re
-from urllib import response
 from fastmcp import Client
-from fastmcp.client.transports import StdioTransport, StreamableHttpTransport, SSETransport
 from fastmcp.client.auth import OAuth
-
+from fastmcp.client.transports import StdioTransport, StreamableHttpTransport, SSETransport
+from pathlib import Path
+from urllib import response
 import json
+import logging
+import re
+
 # Import tools to register them with MCP
 import tools.mcptime
 import tools.storage
 import tools.command
-import logging
+
 
 logging.getLogger().handlers.clear()
 logger = logging.getLogger(__name__)
@@ -58,9 +60,10 @@ class Server:
 
 class MCPClient:
     
-    def __init__(self, servers: list[Server]):
+    def __init__(self, servers: list[Server], log_file: str | Path | None = None):
 
         self.servers = servers
+        self.log_file = Path(log_file) if log_file else None
         self.clients = {}
         
         
@@ -74,7 +77,8 @@ class MCPClient:
                 transport = StdioTransport(
                     command = server.command,
                     args = server.args,
-                    env = server.env
+                    env = server.env,
+                    log_file = self.log_file
                 )
                 self.clients[clean_name] = Client(transport)
             
