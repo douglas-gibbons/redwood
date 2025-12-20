@@ -137,17 +137,17 @@ class MCPClient:
                         content = json.loads(response.content[0].text)
                     except json.JSONDecodeError:
                         logger.debug("Tool " + full_tool_name + " returned non-JSON content")
-                        return {"results": response.content[0].text}
+                        return {"result": response.content[0].text}
                     if isinstance(content, dict):
                         return content
                     elif isinstance(content, list):
-                        return {"results": content}
+                        return {"result": content}
                     else:
                         logger.debug("Tool " + full_tool_name + " returned non-dict/list content")
                         return {}
                 else:
                     logger.debug("Tool " + full_tool_name + " returned no content")
-                    return {}
+                    return {"result": ""}
             
         else:
             logger.debug("User denied execution of tool " + full_tool_name)
