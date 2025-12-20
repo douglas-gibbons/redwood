@@ -126,7 +126,7 @@ async def main():
                 response = await mcpc.execute_tool(tool_name, part.function_call.args)
                 function_response_part = genai.types.Part.from_function_response(
                     name = tool_name,
-                    response=response.structured_content
+                    response=response
                 )
                 resp = genai.types.Content(role="function", parts=[function_response_part])
                 contents.append(resp)
