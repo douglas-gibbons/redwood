@@ -6,7 +6,7 @@ help:              ## show this help.
 .PHONY: test
 .ONESHELL:
 test:              ## run the test suite.
-	uv run pytest
+	PYTHONPATH=. uv run pytest
 
 .PHONY: cli
 .ONESHELL:

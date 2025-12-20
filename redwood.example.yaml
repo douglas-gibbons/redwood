@@ -3,31 +3,63 @@ model:
   name: gemini-2.5-flash
   api_key: API-KEY-HERE
 
-
-mcp:
-
-  - name: sequentialthinking
-    ask: false # ask the user before running tools
-    command: npx
-    args:
-      - "-y"
-      - "@modelcontextprotocol/server-sequential-thinking"
-
-  - name: redwood
-    ask: true # ask the user before running tools
-    command: ./server.sh
-
-  # - name: http-example
-  #   url: https://api.example.com/v1/stream
-  #   headers:
-  #     Authorization: Bearer API-KEY-HERE
-
 # Safety valve, in case of looping
 max_model_calls: 20
 
 logging:
   level: INFO
   file: /tmp/redwood.log
+
+mcp:
+
+  # Redwood Internal Tools
+  - name: redwood
+    ask: true # ask the user before running tools
+    command: ./server.sh
+
+  ## Sequential Thinking
+  #
+  # - name: sequentialthinking
+  #   ask: false # ask the user before running tools
+  #   command: npx
+  #   args:
+  #     - "-y"
+  #     - "@modelcontextprotocol/server-sequential-thinking"
+
+  ## DuckDuckGo web search
+  #
+  # - name: duckduckgo
+  #   ask: false
+  #   command: uvx
+  #   args:
+  #     - "duckduckgo-mcp-server"
+
+  ## Filesystem
+  #
+  # - name: filesystem
+  #   ask: true
+  #   command: npx
+  #   args:
+  #     - "-y"
+  #     - "@modelcontextprotocol/server-filesystem"
+  #     - "/home"
+
+  ## Atlassian
+  ##
+  ## uses the SSE protocol, and connects with OAUTH2, so this will
+  ## open a browser window for authentication
+  #
+  # - name: atlassian
+  #   ask: false
+  #   url: https://mcp.atlassian.com/server/v1/sse
+  #   protocol: sse
+
+  # HTTP Example Tool with headers
+  # - name: http-example
+  #   url: https://api.example.com/v1/stream
+  #   headers:
+  #     Authorization: Bearer API-KEY-HERE
+
 
 prompt: |
   You are a personal assistant who helps a user with day-to-day tasks
