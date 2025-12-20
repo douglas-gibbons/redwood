@@ -38,7 +38,7 @@ cp redwood.example.yaml $HOME/.config/redwood.yaml
 Then edit the configuration to match your requirements:
 
 * Change the Gemini API key
-* Note down where the logs are written (`logging.file`)
+* Note down where the logs are written (see the logging section)
 * Add any MCP servers you want to use. There are some examples that you can uncomment
 
 ### Running the CLI
