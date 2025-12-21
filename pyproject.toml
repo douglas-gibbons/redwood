@@ -3,6 +3,7 @@ name = "redwood"
 version = "0.1.0"
 description = "MCP server"
 readme = "README.md"
+license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
     "httpx>=0.28.1",
@@ -14,3 +15,10 @@ dependencies = [
     "munch>=4.0.0",
     "google-genai>=1.56.0",
 ]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+redwood = "cli:run"
