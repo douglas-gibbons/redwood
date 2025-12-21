@@ -1,5 +1,5 @@
 import datetime
-from server import mcp
+from . import mcp
 
 @mcp.tool()
 def get_current_date_and_time() -> str:

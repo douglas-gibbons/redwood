@@ -70,16 +70,17 @@ There are helper functions for Agents in MCP form.
 
 The storage mechanism is intentionally vague; use prompts to direct its use.
 
-### Adding the MCP tools to an Agent
+### Running the MCP server
 
-Add server.sh as an STDIO MCP server
+Run `make server` to start the CLI MCP server.
+
 
 ### Testing with inspector
 
 Run
 
 ```
-npx @modelcontextprotocol/inspector `pwd`/server.sh
+npx @modelcontextprotocol/inspector make server
 ```
 
 # Contributing

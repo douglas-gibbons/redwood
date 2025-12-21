@@ -1,6 +1,6 @@
 import httpx
 from markdownify import markdownify as md
-from server import mcp
+from . import mcp
 
 @mcp.tool()
 async def get_webpage_content(url: str) -> str:

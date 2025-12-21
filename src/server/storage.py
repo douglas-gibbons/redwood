@@ -1,6 +1,6 @@
-from server import mcp
 import database
 from typing import Optional
+from . import mcp
 
 @mcp.tool()
 def get_categories() -> list[str]:

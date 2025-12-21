@@ -6,13 +6,13 @@ help:              ## show this help.
 .PHONY: test
 .ONESHELL:
 test:              ## run the test suite.
-	PYTHONPATH=. uv run pytest
+	uv run pytest
 
 .PHONY: cli
 .ONESHELL:
 cli:               ## run the cli
-	uv run cli.py
+	uv run cli
 
 .PHONY: server
 server:            ## run the server. You can also run server.sh
-	uv run server.py
+	uv run server

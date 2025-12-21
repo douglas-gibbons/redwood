@@ -3,14 +3,8 @@ from fastmcp.client.auth import OAuth
 from fastmcp.client.transports import StdioTransport, StreamableHttpTransport, SSETransport
 from pathlib import Path
 from urllib import response
-import json
 import logging
 import re
-
-# Import tools to register them with MCP
-import tools.mcptime
-import tools.storage
-import tools.command
 
 
 logging.getLogger().handlers.clear()
@@ -104,7 +98,7 @@ class MCPClient:
         all_tools = []
 
         for name, client in self.clients.items():
-
+            logger.debug("Listing tools for client " + name)
             async with client:
                 tools = await client.list_tools()
                 for tool in tools:
