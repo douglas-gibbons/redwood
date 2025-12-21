@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import AsyncMock, patch, MagicMock
 import pytest
-from tools.web_scraper import get_webpage_content
+from server.web_scraper import get_webpage_content
 
 @pytest.mark.asyncio
 async def test_get_webpage_content():
