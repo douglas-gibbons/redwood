@@ -1,5 +1,5 @@
-from server import mcp
 import subprocess
+from . import mcp
 
 @mcp.tool()
 def run_command(command: str) -> str:

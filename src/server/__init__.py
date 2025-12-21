@@ -8,3 +8,15 @@ logging.basicConfig(
 )
 
 mcp = FastMCP(name = "redwood")
+
+# Import tools to register them
+from . import command
+from . import mcptime
+from . import storage
+from . import web_scraper
+
+def run():
+    mcp.run()
+
+if __name__ == "__main__":
+    run()
