@@ -1,6 +1,8 @@
 # Redwood
 
-Redwood is a Python project that implements a Model Context Protocol and a CLI client for Gemini. 
+Redwood is a Python project that implements a CLI client for Gemini.
+
+There's also an MCP server with basic tools to help with tasks such as telling the time, running local commands and storing data.
 
 ## Motivation
 
@@ -10,14 +12,34 @@ want more control.
 This tool is pretty raw. It gives full control of the prompt in the one configuration file and makes no assumptions about what
 tools to offer the model; leaving it entirely up to the user.
 
-if that's not enough, it's written in Python, and is super simple to modify.
+If that's not enough, it's written in Python, and is super simple to modify, should you want to.
 
 <p align="center">
   <img src="screenshot.png" alt="Redwood Screenshot" width="60%">
 </p>
 
 
-## Requirements
+## Quick Start for the CLI app
+
+1. Install uv (`brew install uv`)
+
+2. Download the example configuration file and copy it to your $HOME/.config directory:
+   
+   ```bash
+   curl -o ~/.config/redwood.yaml https://raw.githubusercontent.com/douglas-gibbons/redwood/main/redwood.example.yaml
+   ```
+
+3. Edit `~/.config/redwood.yaml` to add your [Gemini API key](https://ai.google.dev/gemini-api/docs/api-key), configure MCP servers, and maybe tweak the prompt.
+
+4. Run the CLI:
+
+   ```bash
+   uvx --from git+https://github.com/douglas-gibbons/redwood cli
+   ```
+
+## Development
+
+### Requirements
 
 This python app requires:
 
@@ -33,10 +55,6 @@ or
 `git clone git@github.com:douglas-gibbons/redwood.git`
 
 
-## CLI chat interface
-
-The CLI application is a simple chat interface for use with Gemini.
-
 ### Configuration
 
 Copy the [example configuration file](redwood.example.yaml) into your $HOME/.config directory:
@@ -51,11 +69,12 @@ Then edit the configuration to match your requirements:
 * Note down where the logs are written (see the logging section)
 * Add any MCP servers you want to use. There are some examples that you can uncomment
 
+
 ### Running the CLI
 
 Run this command on a terminal from where you have the code checked out:
 
-```
+```bash
 make cli
 ```
 
@@ -64,15 +83,10 @@ Special commands:
 * Type `tools` to list available tools.
 * Type `exit` to exit.
 
-## MCP Tools
-
-There are helper functions for Agents in MCP form.
-
-The storage mechanism is intentionally vague; use prompts to direct its use.
 
 ### Running the MCP server
 
-Run `make server` to start the CLI MCP server.
+Run `make server` to start the MCP server.
 
 
 ### Testing with inspector
