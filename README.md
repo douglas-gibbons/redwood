@@ -1,6 +1,16 @@
 # Redwood
 
-Redwood is a Python project that implements a Model Context Protocol (MCP) server and a CLI client for Gemini. It is designed to facilitate the development and testing of MCP tools and agentic workflows, providing a simple chat interface and a collection of helper functions.
+Redwood is a Python project that implements a Model Context Protocol and a CLI client for Gemini. 
+
+## Motivation
+
+As AI tools get more advanced, they tend to hide away more of the configuration.  Great for end users, but a little annoying if you
+want more control.
+
+This tool is pretty raw. It gives full control of the prompt in the one configuration file and makes no assumptions about what
+tools to offer the model; leaving it entirely up to the user.
+
+if that's not enough, it's written in Python, and is super simple to modify.
 
 <p align="center">
   <img src="screenshot.png" alt="Redwood Screenshot" width="60%">
