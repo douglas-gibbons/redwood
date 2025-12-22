@@ -1,6 +1,7 @@
 from fastmcp import Client
 from fastmcp.client.auth import OAuth
 from fastmcp.client.transports import StdioTransport, StreamableHttpTransport, SSETransport
+from fastmcp.client.logging import LogMessage
 from pathlib import Path
 from urllib import response
 import logging
@@ -36,6 +37,16 @@ def dict_to_server(d):
             headers=d.get("headers", {}),
             protocol=d.get("protocol", None)
     )
+
+# Handles logging for servers and forwards to standard logging
+LOGGING_LEVEL_MAP = logging.getLevelNamesMapping()
+async def log_handler(message: LogMessage):
+    msg = message.data.get('msg')
+    extra = message.data.get('extra')
+    # Convert the MCP log level to a Python log level
+    level = LOGGING_LEVEL_MAP.get(message.level.upper(), logging.INFO)
+    # Log the message using the standard logging library
+    logger.log(level, msg, extra=extra)
 
 class Server:
     def __init__(self, name, ask, command, args, env, url, headers, protocol):
@@ -74,7 +85,7 @@ class MCPClient:
                     env = server.env,
                     log_file = self.log_file
                 )
-                self.clients[clean_name] = Client(transport)
+                self.clients[clean_name] = Client(transport, log_handler=log_handler)
             
             # HTTP or SSE Transport
             elif server.url is not None:
