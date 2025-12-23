@@ -18,24 +18,18 @@ If that's not enough, it's written in Python, and is super simple to modify, sho
   <img src="screenshot.png" alt="Redwood Screenshot" width="60%">
 </p>
 
-
 ## Quick Start for the CLI app
 
 1. Install uv (`brew install uv`)
 
-2. Download the example configuration file and copy it to your $HOME/.config directory:
-   
-   ```bash
-   curl -o ~/.config/redwood.yaml https://raw.githubusercontent.com/douglas-gibbons/redwood/main/redwood.example.yaml
-   ```
-
-3. Edit `~/.config/redwood.yaml` to add your [Gemini API key](https://ai.google.dev/gemini-api/docs/api-key), configure MCP servers, and maybe tweak the prompt.
-
-4. Run the CLI:
+2. Run the CLI:
 
    ```bash
    uvx --from git+https://github.com/douglas-gibbons/redwood cli
    ```
+
+The first time you run it, it will create a configuration file at `~/.config/redwood.yaml` . Edit this file to add your [Gemini API key](https://ai.google.dev/gemini-api/docs/api-key), configure MCP servers, and maybe tweak the prompt for your needs.
+
 
 ## Development
 
@@ -55,21 +49,6 @@ or
 `git clone git@github.com:douglas-gibbons/redwood.git`
 
 
-### Configuration
-
-Copy the [example configuration file](redwood.example.yaml) into your $HOME/.config directory:
-
-```
-cp redwood.example.yaml $HOME/.config/redwood.yaml
-```
-
-Then edit the configuration to match your requirements:
-
-* Change the Gemini API key
-* Note down where the logs are written (see the logging section)
-* Add any MCP servers you want to use. There are some examples that you can uncomment
-
-
 ### Running the CLI
 
 Run this command on a terminal from where you have the code checked out:
@@ -77,13 +56,6 @@ Run this command on a terminal from where you have the code checked out:
 ```bash
 make cli
 ```
-
-Special commands:
-
-* Type `/conversation` to display the full conversation so far, including tool calls and responses
-* Type `/tools` to list available tools
-* Type `/exit` to exit
-
 
 ### Running the MCP server
 
