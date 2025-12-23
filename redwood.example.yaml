@@ -15,10 +15,9 @@ mcp:
   # Redwood Internal Tools
   - name: redwood
     ask: true # ask the user before running tools
-    command: uvx
+    command: uv
     args:
-      - "--from"
-      - "git+https://github.com/douglas-gibbons/redwood"
+      - "run"
       - "server"
 
   ## Sequential Thinking
