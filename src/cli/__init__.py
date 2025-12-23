@@ -34,10 +34,20 @@ def print_tools(tools):
             if tool.inputSchema:
                 console.print(f"    Args: {tool.inputSchema}")
 
+def print_conversation(contents):
+    console = Console()
+    console.print("[bold]Conversation History:[/bold]")
+    console.print(contents)
+
 async def main():
     logger.info("Starting redwood main")
-
+    
     console = Console()
+    console.print("\n[bold green]Welcome to Redwood![/bold green]\n")
+    console.print("You can interact with the AI model and use various tools via MCP servers.")
+    console.print("Tools: Type '/tools' to list available tools.")
+    console.print("Conversation: Type '/conversation' to show conversation history.")
+    console.print("Exit: Type '/exit' to quit.\n")
 
     # Load config file
     config = Config(DEFAULT_CONFIG_FILE)
@@ -93,13 +103,18 @@ async def main():
     while True:
         
         if ask_user:
+            
             sys.stdout.flush()
             user_input = input(">> ")
-            if user_input == "exit" or user_input == "/exit":
+            if user_input == "/exit":
                 break
-            if user_input == "tools" or user_input == "/tools":
+            if user_input == "/tools":
                 print_tools(tools)
                 continue
+            if user_input == "/conversation":
+                print_conversation(contents)
+                continue
+            
             # Append user output to contents
             contents.append(genai.types.Content(role="user", parts=[genai.types.Part(text=user_input)]))
         

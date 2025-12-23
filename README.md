@@ -80,8 +80,9 @@ make cli
 
 Special commands:
 
-* Type `tools` to list available tools.
-* Type `exit` to exit.
+* Type `/conversation` to display the full conversation so far, including tool calls and responses
+* Type `/tools` to list available tools
+* Type `/exit` to exit
 
 
 ### Running the MCP server
