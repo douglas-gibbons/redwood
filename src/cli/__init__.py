@@ -103,7 +103,7 @@ async def main():
     while True:
         
         if ask_user:
-            
+
             sys.stdout.flush()
             user_input = input(">> ")
             if user_input == "/exit":
@@ -120,7 +120,8 @@ async def main():
         
         # Safety valve
         if model_calls >= config.max_model_calls:
-            print("Max model calls reached. This is a safety valve to catch costly looping")
+            console.print("[bold red]Max model calls reached.[/bold red]")
+            console.print("This is a safety valve to catch costly looping. You can increase the limit in the config file if needed.")
             break
         model_calls += 1
         

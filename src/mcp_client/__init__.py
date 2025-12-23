@@ -3,7 +3,6 @@ from fastmcp.client.auth import OAuth
 from fastmcp.client.transports import StdioTransport, StreamableHttpTransport, SSETransport
 from fastmcp.client.logging import LogMessage
 from pathlib import Path
-from urllib import response
 import logging
 import re
 
