@@ -19,7 +19,7 @@ def get_tool_name(full_tool_name):
         return None, None
     return n[0], n[1]
 
-def toolsResponse(message_type, message):
+def toolResponse(message_type, message):
         return {
             "message_type": message_type,
             "message": message
@@ -128,7 +128,11 @@ class MCPClient:
             client = self.clients[server_name]
             async with client:
                 logger.debug("Executing tool " + full_tool_name + " with args " + str(args))
-                response = await client.call_tool(tool_name, args)
+                try:
+                    response = await client.call_tool(tool_name, args)
+                except Exception as e:
+                    logger.error("Error calling tool " + full_tool_name + ": " + str(e))
+                    return toolResponse("error", "Error calling tool " + full_tool_name + ": " + str(e))
                 logger.debug("Received response from tool " + full_tool_name + ": " + str(response))
                 
                 if response.content is not None and len(response.content) > 0 and response.content[0].text is not None:
