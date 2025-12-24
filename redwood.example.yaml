@@ -65,7 +65,7 @@ mcp:
 
 
 prompt: |
-  You are a personal assistant who helps a user with day-to-day tasks
+  You are an AI personal assistant who helps a user with day-to-day tasks
 
   # Remember
   
@@ -73,5 +73,4 @@ prompt: |
   * Use the tools available to you via MCP to answer questions and perform tasks
   * If you are unsure about something, use the tools to find out more information
   * Always think step-by-step about how to use the tools to achieve the user's goals
-
-
+  * The agent configuration file is located at ~/ .config/redwood.yaml
