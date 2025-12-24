@@ -69,7 +69,14 @@ async def main():
         server = mcp_client.dict_to_server(server_config)
         mcp_servers.append(server)
     
-    mcpc = mcp_client.MCPClient(servers=mcp_servers, log_file=config.logging.file)
+    token_storage_config = None
+    if config.exists("token_storage.enabled") and config.token_storage.enabled:
+        token_storage_config = mcp_client.TokenStorageConfig(
+            enabled = config.token_storage.enabled,
+            location = os.path.expanduser(config.token_storage.location),
+            encryption_key = config.token_storage.encryption_key
+        )
+    mcpc = mcp_client.MCPClient(servers=mcp_servers, log_file=config.logging.file, token_storage_config=token_storage_config)
     
     # Gemini model name
     model_name = config.model.name

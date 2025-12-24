@@ -10,6 +10,13 @@ logging:
   level: INFO
   file: /tmp/redwood.log
 
+token_storage:
+  enabled: false
+  location: ~/config/redwood_auth_tokens/ # Directory
+  # Make a new token storage key with
+  # dd if=/dev/urandom bs=32 count=1 2>/dev/null | openssl base64`
+  encryption_key: E/YIKS+62be/MlYpGHlrXW4lW/fgB/DzFx3SrPgsKJ0=
+
 mcp:
 
   # Redwood Internal Tools

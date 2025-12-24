@@ -2,6 +2,9 @@ from fastmcp import Client
 from fastmcp.client.auth import OAuth
 from fastmcp.client.transports import StdioTransport, StreamableHttpTransport, SSETransport
 from fastmcp.client.logging import LogMessage
+from key_value.aio.stores.disk import DiskStore
+from key_value.aio.wrappers.encryption import FernetEncryptionWrapper
+from cryptography.fernet import Fernet
 from pathlib import Path
 import logging
 import re
@@ -62,15 +65,29 @@ class Server:
         self.headers = headers
         self.protocol = protocol
 
+class TokenStorageConfig:
+    def __init__(self, enabled: bool, location: str, encryption_key: str):
+        self.enabled = enabled
+        self.location = location
+        self.encryption_key = encryption_key
+
 class MCPClient:
     
-    def __init__(self, servers: list[Server], log_file: str | Path | None = None):
+    def __init__(self, servers: list[Server], log_file: str | Path | None = None, token_storage_config: TokenStorageConfig | None = None):
 
         self.servers = servers
         self.log_file = Path(log_file) if log_file else None
         self.clients = {}
-        
-        
+        self.token_storage_config = token_storage_config
+
+        # Set up token storage if enabled
+        encrypted_storage = None
+        if self.token_storage_config is not None and self.token_storage_config.enabled:
+            encrypted_storage = FernetEncryptionWrapper(
+                key_value=DiskStore(directory=self.token_storage_config.location),
+                fernet=Fernet(self.token_storage_config.encryption_key)
+            )
+
         # Set up other servers
         for server in self.servers:
             
@@ -92,13 +109,13 @@ class MCPClient:
                     transport = SSETransport(
                         url = server.url,
                         headers = server.headers,
-                        auth = OAuth(mcp_url = server.url)
+                        auth = OAuth(mcp_url = server.url, token_storage = encrypted_storage)
                     )
                 else:
                     transport = StreamableHttpTransport(
                         url = server.url,
                         headers = server.headers,
-                        auth = OAuth(mcp_url = server.url)
+                        auth = OAuth(mcp_url = server.url, token_storage = encrypted_storage)
                     )
                 self.clients[clean_name] = Client(transport)
                 
