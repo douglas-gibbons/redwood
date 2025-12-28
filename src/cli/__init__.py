@@ -45,9 +45,9 @@ async def main():
     console = Console()
     console.print("\n[bold green]Welcome to Redwood![/bold green]\n")
     console.print("You can interact with the AI model and use various tools via MCP servers.")
-    console.print("Tools: Type '/tools' to list available tools.")
-    console.print("Conversation: Type '/conversation' to show conversation history.")
-    console.print("Exit: Type '/exit' to quit.\n")
+    console.print("Tools: Type '/tools', or '/t' to list available tools.")
+    console.print("Conversation: Type '/conversation' or '/c' to show conversation history.")
+    console.print("Exit: Type '/exit' or '/x' to quit.\n")
 
     # Load config file
     config = Config(DEFAULT_CONFIG_FILE)
@@ -113,12 +113,12 @@ async def main():
 
             sys.stdout.flush()
             user_input = input(">> ")
-            if user_input == "/exit":
+            if user_input == "/exit" or user_input == "/x":
                 break
-            if user_input == "/tools":
+            if user_input == "/tools" or user_input == "/t":
                 print_tools(tools)
                 continue
-            if user_input == "/conversation":
+            if user_input == "/conversation" or user_input == "/c":
                 print_conversation(contents)
                 continue
             
