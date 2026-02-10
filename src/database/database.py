@@ -1,13 +1,13 @@
 import sqlite3
 from datetime import datetime
 from typing import Optional
+import os
 
-DB_FILE = "mcp_data.db"
-
+db_file = os.path.expanduser("~/.config/redwood_mcp_data.db")
 
 def get_db_connection():
     """Establishes a connection to the SQLite database."""
-    conn = sqlite3.connect(DB_FILE)
+    conn = sqlite3.connect(db_file)
     conn.row_factory = sqlite3.Row
     return conn
 

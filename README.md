@@ -30,6 +30,15 @@ If that's not enough, it's written in Python, and is super simple to modify, sho
 
 The first time you run it, it will create a configuration file at `~/.config/redwood.yaml` . Edit this file to add your [Gemini API key](https://ai.google.dev/gemini-api/docs/api-key), configure MCP servers, and maybe tweak the prompt for your needs.
 
+## CLI Tips
+
+The application doesn't know what directory you started the application in, so if you want to work in a specific location, 
+just tell it:
+
+```
+ >> Use a working directory of ~/workspace
+Okay, I will use ~/workspace as the working directory.
+```
 
 ## Development
 
