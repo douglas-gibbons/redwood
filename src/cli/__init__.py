@@ -55,7 +55,7 @@ async def main():
     console.print("You can interact with the AI model and use various tools via MCP servers by typing these commands:\n")
     console.print("Tools:        '/tools', or '/t' to list available tools.")
     console.print("Conversation: '/conversation' or '/c' to show conversation history.")
-    console.print("Location:     '/locate' or '/l' to tell the model to work in the current directory.")
+    console.print("Locate:       '/locate' or '/l' to tell the model to work in the current directory.")
     console.print("Exit:         '/exit' or '/x' to quit.\n")
 
     # Load config file
