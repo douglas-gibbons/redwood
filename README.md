@@ -32,13 +32,9 @@ The first time you run it, it will create a configuration file at `~/.config/red
 
 ## CLI Tips
 
-The application doesn't know what directory you started the application in, so if you want to work in a specific location, 
-just tell it:
+The model doesn't know what directory you started the application in, but you can set it using `/location`. This adds `Use "{location}" as the working directory. File operations should be relative to this directory`  to the prompt, where `{location}` is set to the directory the application was started in.
 
-```
- >> Use a working directory of ~/workspace
-Okay, I will use ~/workspace as the working directory.
-```
+This is not set by default, so that you have total control over how you want to prompt the model.
 
 ## Development
 

@@ -34,6 +34,14 @@ def print_tools(tools):
             if tool.inputSchema:
                 console.print(f"    Args: {tool.inputSchema}")
 
+def set_location(contents):
+    location = os.getcwd()
+    console = Console()
+    console.print(f"[bold]Location set to {location}[/bold]")
+    
+    contents.append(genai.types.Content(role="user", parts=[genai.types.Part(text=f"Use \"{location}\" as the working directory. File operations should be relative to this directory.")]))
+    contents.append(genai.types.Content(role="model", parts=[genai.types.Part(text="Understood")]))
+    
 def print_conversation(contents):
     console = Console()
     console.print("[bold]Conversation History:[/bold]")
@@ -44,10 +52,11 @@ async def main():
     
     console = Console()
     console.print("\n[bold green]Welcome to Redwood![/bold green]\n")
-    console.print("You can interact with the AI model and use various tools via MCP servers.")
-    console.print("Tools: Type '/tools', or '/t' to list available tools.")
-    console.print("Conversation: Type '/conversation' or '/c' to show conversation history.")
-    console.print("Exit: Type '/exit' or '/x' to quit.\n")
+    console.print("You can interact with the AI model and use various tools via MCP servers by typing these commands:\n")
+    console.print("Tools:        '/tools', or '/t' to list available tools.")
+    console.print("Conversation: '/conversation' or '/c' to show conversation history.")
+    console.print("Location:     '/locate' or '/l' to tell the model to work in the current directory.")
+    console.print("Exit:         '/exit' or '/x' to quit.\n")
 
     # Load config file
     config = Config(DEFAULT_CONFIG_FILE)
@@ -120,6 +129,9 @@ async def main():
                 continue
             if user_input == "/conversation" or user_input == "/c":
                 print_conversation(contents)
+                continue
+            if user_input == "/locate" or user_input == "/l":
+                set_location(contents)
                 continue
             
             # Append user output to contents
