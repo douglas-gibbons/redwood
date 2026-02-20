@@ -1282,6 +1282,7 @@ dependencies = [
     { name = "markdownify" },
     { name = "mcp", extra = ["cli"] },
     { name = "munch" },
+    { name = "pathvalidate" },
     { name = "pytest-asyncio" },
 ]
 
@@ -1295,6 +1296,7 @@ requires-dist = [
     { name = "markdownify", specifier = ">=0.11.6" },
     { name = "mcp", extras = ["cli"], specifier = ">=1.20.0" },
     { name = "munch", specifier = ">=4.0.0" },
+    { name = "pathvalidate", specifier = ">=3.3.1" },
     { name = "pytest-asyncio", specifier = ">=0.23.5" },
 ]
 

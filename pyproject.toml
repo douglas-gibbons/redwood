@@ -15,6 +15,7 @@ dependencies = [
     "munch>=4.0.0",
     "google-genai>=1.56.0",
     "diskcache>=5.6.3",
+    "pathvalidate>=3.3.1",
 ]
 
 [build-system]
