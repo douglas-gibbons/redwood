@@ -1275,6 +1275,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
+    { name = "diskcache" },
     { name = "fastmcp" },
     { name = "google-genai" },
     { name = "httpx" },
@@ -1287,6 +1288,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.12.3" },
+    { name = "diskcache", specifier = ">=5.6.3" },
     { name = "fastmcp", specifier = ">=2.14.1" },
     { name = "google-genai", specifier = ">=1.56.0" },
     { name = "httpx", specifier = ">=0.28.1" },
