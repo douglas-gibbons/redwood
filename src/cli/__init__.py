@@ -154,6 +154,11 @@ async def main():
         # Append LLM output to contents
         contents.append(response.candidates[0].content)
 
+        if "parts" not in response.candidates[0].content:
+            console.print("[bold red]No content returned from model.[/bold red]")
+            logger.warning(f"No content returned from model. Full response: {response}")
+            continue
+
         # Deal with LLM output
         for part in response.candidates[0].content.parts:
             
