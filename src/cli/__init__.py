@@ -62,7 +62,7 @@ async def main():
     config = Config(DEFAULT_CONFIG_FILE)
 
     if not config.exists("model.api_key"):
-        raise("API Key missing from configuration file")
+        raise ValueError("API Key missing from configuration file")
 
     logging.basicConfig(
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -154,7 +154,7 @@ async def main():
         # Append LLM output to contents
         contents.append(response.candidates[0].content)
 
-        if "parts" not in response.candidates[0].content:
+        if not response.candidates or not response.candidates[0].content or not response.candidates[0].content.parts:
             console.print("[bold red]No content returned from model.[/bold red]")
             logger.warning(f"No content returned from model. Full response: {response}")
             continue
