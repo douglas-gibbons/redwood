@@ -1,6 +1,6 @@
 # Redwood
 
-Redwood is a Python project that implements a CLI client for Gemini.
+Redwood is a CLI client for Gemini.
 
 There's also an MCP server with basic tools to help with tasks such as telling the time, running local commands and storing data.
 
