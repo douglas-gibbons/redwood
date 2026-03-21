@@ -27,6 +27,14 @@ mcp:
       - "run"
       - "server"
 
+  # Sub-Agent Tool Server
+  - name: subagent
+    ask: true
+    command: uv
+    args:
+      - "run"
+      - "agent"
+
   ## Sequential Thinking
   #
   # - name: sequentialthinking

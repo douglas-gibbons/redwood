@@ -25,3 +25,4 @@ build-backend = "setuptools.build_meta"
 [project.scripts]
 cli = "cli:run"
 server = "server:run"
+agent = "agent:run"
