@@ -47,16 +47,29 @@ def print_conversation(contents):
     console.print("[bold]Conversation History:[/bold]")
     console.print(contents)
 
+def set_initial_prompt(contents, config):
+    # Set initial prompt
+    # Gemini only has user and system prompts
+    if config.exists("prompt"):
+        contents.append(genai.types.Content(role="user", parts=[genai.types.Part(text=config.prompt)]))
+        contents.append(genai.types.Content(role="model", parts=[genai.types.Part(text="Understood")]))
+
+def print_help():
+    console = Console()
+    console.print("You can interact with the AI model and use various tools via MCP servers by typing these commands:\n")
+    console.print("Tools:        '/tools', or '/t' to list available tools")
+    console.print("Reset:        '/reset', or '/r' to reset the conversation")
+    console.print("Conversation: '/conversation' or '/c' to show conversation history")
+    console.print("Locate:       '/locate' or '/l' to tell the model to work in the current directory")
+    console.print("Help:         '/help' or '/?' to show this help message")
+    console.print("Exit:         '/exit' or '/x' to quit\n")
+
 async def main():
     logger.info("Starting redwood main")
     
     console = Console()
     console.print("\n[bold green]Welcome to Redwood![/bold green]\n")
-    console.print("You can interact with the AI model and use various tools via MCP servers by typing these commands:\n")
-    console.print("Tools:        '/tools', or '/t' to list available tools.")
-    console.print("Conversation: '/conversation' or '/c' to show conversation history.")
-    console.print("Locate:       '/locate' or '/l' to tell the model to work in the current directory.")
-    console.print("Exit:         '/exit' or '/x' to quit.\n")
+    print_help()
 
     # Load config file
     config = Config(DEFAULT_CONFIG_FILE)
@@ -96,12 +109,7 @@ async def main():
     # Chat contents
     contents = []
 
-    # Set initial prompt
-    # Gemini only has user and system prompts
-    if config.exists("prompt"):
-        prompt = config.prompt
-        contents.append(genai.types.Content(role="user", parts=[genai.types.Part(text=prompt)]))
-        contents.append(genai.types.Content(role="model", parts=[genai.types.Part(text="Understood")]))
+    set_initial_prompt(contents, config)
 
     gemini_config = genai.types.GenerateContentConfig(
         tools = tools,
@@ -110,7 +118,7 @@ async def main():
         ),
     )
     
-    model_calls = 0
+    model_calls: int = 0
     ask_user = True
 
     # logging.getLogger().handlers.clear()
@@ -133,12 +141,20 @@ async def main():
             if user_input == "/locate" or user_input == "/l":
                 set_location(contents)
                 continue
+            if user_input == "/help" or user_input == "/?":
+                print_help()
+                continue
+            if user_input == "/reset" or user_input == "/r":
+                contents.clear()
+                set_initial_prompt(contents, config)
+                console.print("[bold green]Conversation history reset.[/bold green]")
+                continue
             
             # Append user output to contents
             contents.append(genai.types.Content(role="user", parts=[genai.types.Part(text=user_input)]))
         
         # Safety valve
-        if model_calls >= config.max_model_calls:
+        if model_calls >= int(config.max_model_calls):
             console.print("[bold red]Max model calls reached.[/bold red]")
             console.print("This is a safety valve to catch costly looping. You can increase the limit in the config file if needed.")
             break
