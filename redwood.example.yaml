@@ -38,6 +38,18 @@ mcp:
       - "run"
       - "agent"
 
+  # Image Generation Tool Server
+  - name: image_generator
+    ask: true
+    command: uv
+    args:
+      - "run"
+      - "image_generator"
+      - "--model"
+      - "imagen-4.0-fast-generate-001"
+      - "--output-dir"
+      - "~/Downloads"
+
   ## Sequential Thinking
   #
   # - name: sequentialthinking
@@ -72,8 +84,7 @@ mcp:
   #
   # - name: atlassian
   #   ask: false
-  #   url: https://mcp.atlassian.com/server/v1/sse
-  #   protocol: sse
+  #   url: https://mcp.atlassian.com/server/v1/mcp
 
   # HTTP Example Tool with headers
   # - name: http-example

@@ -30,6 +30,36 @@ If that's not enough, it's written in Python, and is super simple to modify, sho
 
 The first time you run it, it will create a configuration file at `~/.config/redwood.yaml` . Edit this file to add your [Gemini API key](https://ai.google.dev/gemini-api/docs/api-key), configure MCP servers, and maybe tweak the prompt for your needs.
 
+## Tools
+
+### Image Generation
+
+An image generation MCP server is included, and configured in the default configuration file. It will save files to a local directory.
+
+### Agent
+
+An MCP agent is included. It's not overly useful, yet.
+
+### General tools
+
+These include:
+
+* time tools, so the agent knows what the date and time is
+* command line runner, so it can run commands
+* a web scraper
+
+### Database
+
+There's a simple database as part of the main MCP server, for storing data. You can feed your model prompts to use this for _something_.
+
+For example, you can add this to your prompt to use lists:
+
+```
+  # Lists
+  Use the redwood database tool to store lists. The "category" would be the name of the list, 
+  and the "content" would be the value. For example, shopping lists and TODO lists.
+```
+
 ## CLI Tips
 
 The model doesn't know what directory you started the application in, but you can set it using `/location`. This adds `Use "{location}" as the working directory. File operations should be relative to this directory`  to the prompt, where `{location}` is set to the directory the application was started in.
