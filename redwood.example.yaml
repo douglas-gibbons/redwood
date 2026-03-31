@@ -79,9 +79,7 @@ mcp:
 
   ## Atlassian
   ##
-  ## uses the SSE protocol, and connects with OAUTH2, so this will
-  ## open a browser window for authentication
-  #
+  ## opens a browser window for authentication
   # - name: atlassian
   #   ask: false
   #   url: https://mcp.atlassian.com/server/v1/mcp
