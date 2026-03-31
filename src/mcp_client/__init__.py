@@ -109,7 +109,10 @@ class MCPClient:
                     auth = OAuth(mcp_url = server.url, token_storage = encrypted_storage)
                 )
                 self.clients[clean_name] = Client(transport)
-                
+            
+            else:
+                logger.error("Server " + server.name + " has no valid transport configuration")
+
             
     async def list_tools(self):
 
