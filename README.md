@@ -4,6 +4,14 @@ Redwood is a CLI client for Gemini.
 
 There's also an MCP server with basic tools to help with tasks such as telling the time, running local commands and storing data.
 
+Features
+
+* terminal based interface
+* able to use MCP tools
+* image generation
+* skills reader
+* full control of the prompt through configuration
+
 ## Motivation
 
 As AI tools get more advanced, they tend to hide away more of the configuration.  Great for end users, but a little annoying if you
@@ -47,6 +55,7 @@ These include:
 * time tools, so the agent knows what the date and time is
 * command line runner, so it can run commands
 * a web scraper
+* skills reader, so the agent can read and use [skills](https://agentskills.io/home).
 
 ### Database
 
