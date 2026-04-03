@@ -119,34 +119,39 @@ class MCPClient:
                 logger.error("Server " + server.name + " has no valid transport configuration")
 
 
-    async def list_tools(self):
-        all_tools = []
-        for name, client in self.clients.items():
-            logger.debug("Listing tools for client " + name)
+    async def _list_tools_for_client(self, name, client):
+        logger.debug("Listing tools for client " + name)
+        try:
+            async with client:
+                tools = await client.list_tools()
+                for tool in tools:
+                    tool.name = name + "_" + tool.name
+            return tools
+        except Exception as e:
+            console = Console()
+            console.print(f"[bold yellow]Error listing tools for client {name}: {e}. Attempting reconnect...[/bold yellow]")
+            logger.warning(f"Error listing tools for client {name}: {e}. Attempting reconnect...")
             try:
+                if hasattr(client, "transport") and isinstance(client.transport, StreamableHttpTransport):
+                    if hasattr(client.transport, "auth") and client.transport.auth is not None:
+                        await client.transport.auth.token_storage_adapter.clear()
+                
                 async with client:
                     tools = await client.list_tools()
                     for tool in tools:
                         tool.name = name + "_" + tool.name
-                all_tools += tools
-            except Exception as e:
-                console = Console()
-                console.print(f"[bold yellow]Error listing tools for client {name}: {e}. Attempting reconnect...[/bold yellow]")
-                logger.warning(f"Error listing tools for client {name}: {e}. Attempting reconnect...")
-                try:
-                    if hasattr(client, "transport") and isinstance(client.transport, StreamableHttpTransport):
-                        if hasattr(client.transport, "auth") and client.transport.auth is not None:
-                            await client.transport.auth.token_storage_adapter.clear()
-                    
-                    async with client:
-                        tools = await client.list_tools()
-                        for tool in tools:
-                            tool.name = name + "_" + tool.name
-                    all_tools += tools
-                except Exception as retry_e:
-                    console.print(f"[bold red]Error listing tools for client {name} after reconnect: {retry_e}[/bold red]")
-                    logger.error(f"Error listing tools for client {name} after reconnect: {retry_e}")
-                
+                return tools
+            except Exception as retry_e:
+                console.print(f"[bold red]Error listing tools for client {name} after reconnect: {retry_e}[/bold red]")
+                logger.error(f"Error listing tools for client {name} after reconnect: {retry_e}")
+                return []
+
+    async def list_tools(self):
+        all_tools = []
+        tasks = [self._list_tools_for_client(name, client) for name, client in self.clients.items()]
+        results = await asyncio.gather(*tasks)
+        for tools in results:
+            all_tools.extend(tools)
         return all_tools
 
     async def execute_tool(self, full_tool_name, args):
