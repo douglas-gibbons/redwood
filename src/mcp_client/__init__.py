@@ -3,6 +3,7 @@ from fastmcp.client.auth import OAuth
 from fastmcp.client.transports import StdioTransport, StreamableHttpTransport
 from fastmcp.client.logging import LogMessage
 from key_value.aio.stores.disk import DiskStore
+from rich.console import Console
 from key_value.aio.wrappers.encryption import FernetEncryptionWrapper
 from cryptography.fernet import Fernet
 from pathlib import Path
@@ -109,24 +110,43 @@ class MCPClient:
                     headers = server.headers,
                     auth = OAuth(mcp_url = server.url, token_storage = encrypted_storage)
                 )
-                self.clients[clean_name] = Client(transport)
+                c = Client(transport)
+
+                self.clients[clean_name] = c
+                
             
             else:
                 logger.error("Server " + server.name + " has no valid transport configuration")
 
-            
+
     async def list_tools(self):
-
         all_tools = []
-
         for name, client in self.clients.items():
             logger.debug("Listing tools for client " + name)
-            async with client:
-                tools = await client.list_tools()
-                for tool in tools:
-                    tool.name = name + "_" + tool.name
-            all_tools += tools
-
+            try:
+                async with client:
+                    tools = await client.list_tools()
+                    for tool in tools:
+                        tool.name = name + "_" + tool.name
+                all_tools += tools
+            except Exception as e:
+                console = Console()
+                console.print(f"[bold yellow]Error listing tools for client {name}: {e}. Attempting reconnect...[/bold yellow]")
+                logger.warning(f"Error listing tools for client {name}: {e}. Attempting reconnect...")
+                try:
+                    if hasattr(client, "transport") and isinstance(client.transport, StreamableHttpTransport):
+                        if hasattr(client.transport, "auth") and client.transport.auth is not None:
+                            await client.transport.auth.token_storage_adapter.clear()
+                    
+                    async with client:
+                        tools = await client.list_tools()
+                        for tool in tools:
+                            tool.name = name + "_" + tool.name
+                    all_tools += tools
+                except Exception as retry_e:
+                    console.print(f"[bold red]Error listing tools for client {name} after reconnect: {retry_e}[/bold red]")
+                    logger.error(f"Error listing tools for client {name} after reconnect: {retry_e}")
+                
         return all_tools
 
     async def execute_tool(self, full_tool_name, args):
@@ -134,7 +154,6 @@ class MCPClient:
         if server_name is None or tool_name is None:
             logger.error("Invalid tool name: " + full_tool_name)
             return toolResponse("error", "Invalid tool name: " + full_tool_name)
-
 
         if self.can_execute_tool(server_name, tool_name, args):
             client = self.clients[server_name]
