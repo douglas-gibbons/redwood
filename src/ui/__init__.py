@@ -2,7 +2,7 @@ import asyncio
 import threading
 import logging
 import tkinter as tk
-from tkinter import scrolledtext
+import customtkinter as ctk
 from chat_engine.chat_engine import ChatEngine
 from chat_engine.display_interface import DisplayInterface
 
@@ -16,17 +16,18 @@ class RedwoodUI(DisplayInterface):
         self.root.geometry("800x600")
         
         # UI Setup
-        self.chat_display = scrolledtext.ScrolledText(self.root, wrap=tk.WORD, state='disabled')
-        self.chat_display.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+        self.chat_display = ctk.CTkTextbox(self.root, activate_scrollbars=True, wrap="word")
+        self.chat_display.pack(padx=20, pady=20, fill=tk.BOTH, expand=True)
+        self.chat_display.configure(state='disabled')
         
-        input_frame = tk.Frame(self.root)
-        input_frame.pack(padx=10, pady=(0, 10), fill=tk.X)
+        input_frame = ctk.CTkFrame(self.root, fg_color="transparent")
+        input_frame.pack(padx=20, pady=(0, 20), fill=tk.X)
         
-        self.user_input = tk.Entry(input_frame)
+        self.user_input = ctk.CTkEntry(input_frame, placeholder_text="Type your message...")
         self.user_input.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 10))
         self.user_input.bind("<Return>", self.send_message)
         
-        self.send_button = tk.Button(input_frame, text="Send", command=self.send_message)
+        self.send_button = ctk.CTkButton(input_frame, text="Send", command=self.send_message, width=100)
         self.send_button.pack(side=tk.RIGHT)
         
         # Menu
@@ -82,21 +83,21 @@ class RedwoodUI(DisplayInterface):
     # UI Helpers
 
     def set_input_state(self, state):
-        self.user_input.config(state=state)
-        self.send_button.config(state=state)
+        self.user_input.configure(state=state)
+        self.send_button.configure(state=state)
         if state == 'normal':
             self.user_input.focus()
 
     def append_to_chat(self, sender, message):
         def _append():
-            self.chat_display.config(state='normal')
+            self.chat_display.configure(state='normal')
             self.chat_display.insert(tk.END, f"{sender}:\n{message}\n\n")
             self.chat_display.see(tk.END)
-            self.chat_display.config(state='disabled')
+            self.chat_display.configure(state='disabled')
         self.root.after(0, _append)
 
     def send_message(self, event=None):
-        text = self.user_input.get().strip()
+        text = self.user_input.get().strip() if hasattr(self.user_input, "get") else ""
         if not text:
             return
         self.user_input.delete(0, tk.END)
@@ -120,7 +121,9 @@ class RedwoodUI(DisplayInterface):
         self.send_message()
 
 def run():
-    root = tk.Tk()
+    ctk.set_appearance_mode("System")
+    ctk.set_default_color_theme("blue")
+    root = ctk.CTk()
     app = RedwoodUI(root)
     root.mainloop()
 
