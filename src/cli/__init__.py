@@ -1,14 +1,7 @@
 import asyncio
-import os
-from google import genai
 from rich.console import Console
 from rich.markdown import Markdown
 from chat_engine.chat_engine import ChatEngine
-import mcp_client
-import pprint
-import logging
-from config import Config
-import sys
 import readline # needed for input() to write to stdout instead of stderr
 from chat_engine.display_interface import DisplayInterface
 
