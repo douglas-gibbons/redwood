@@ -25,10 +25,14 @@ class Display(DisplayInterface):
     def input(self):
         return input(">> ")
 
-def run():
+async def main():
     display = Display()
     engine = ChatEngine(display)
-    asyncio.run(engine.engine())
-
-if __name__ == "__main__":
-    run()
+    await engine.register_tools()
+    
+    while True:
+        user_input = display.input()
+        await engine.answer_call(user_input)
+    
+def run():
+    asyncio.run(main())
