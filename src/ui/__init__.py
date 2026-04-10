@@ -66,10 +66,11 @@ class Display(DisplayInterface):
                 selectable=True, 
                 extension_set=ft.MarkdownExtensionSet.GITHUB_WEB
             )
+            self.chat.controls.append(content)
         else:
-            content = ft.Text(f"{sender}: {message}")
-            
-        self.chat.controls.append(content)
+            self.chat.controls.append(ft.Text(f"{sender}:", weight=ft.FontWeight.BOLD))
+            self.chat.controls.append(ft.Text(f"{message}"))
+        
         self.page.update()
 
 async def main(page: ft.Page):

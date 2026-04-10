@@ -151,18 +151,17 @@ Exit:         '/exit' or '/x' to quit
             return False
         return True
 
-    async def answer_call(self, user_input: str):        
+    async def answer_call(self, user_input: str | None = None):        
         logger.debug(f"answer_call received message: {user_input}")
 
-        if not user_input:
-            return
-
-        if user_input.startswith("/"):
+        if user_input is not None and user_input.startswith("/"):
             self._handle_command(user_input)
             return
 
-        # Append user output to contents
-        self.contents.append(genai.types.Content(role="user", parts=[genai.types.Part(text=user_input)]))
+        if user_input is not None:
+            # Append user output to contents
+            self.contents.append(genai.types.Content(role="user", parts=[genai.types.Part(text=user_input)]))
+        
 
         # Safety valve
         if self.model_calls >= int(self.config.max_model_calls):
@@ -201,7 +200,7 @@ Exit:         '/exit' or '/x' to quit
                 resp = genai.types.Content(role="function", parts=[function_response_part])
                 self.contents.append(resp)
                 # Loop back to get the model's response to the tool output
-                await self.answer_call(user_input="")
+                await self.answer_call()
                 return
 
             # Model returned text
