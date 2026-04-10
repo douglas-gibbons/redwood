@@ -130,41 +130,47 @@ Exit:         '/exit' or '/x' to quit
         self.display.info("Goodbye!")
         sys.exit(0)
 
-    async def answer_call(self, user_input: str):
-        
+    def _handle_command(self, user_input: str) -> bool:
+
+        """Handles slash commands. Returns True if a command was processed."""
+        if user_input == "/exit" or user_input == "/x":
+            self.exit()
+        elif user_input == "/tools" or user_input == "/t":
+            self.print_tools(self.tools)
+        elif user_input == "/conversation" or user_input == "/c":
+            self.print_conversation(self.contents)
+        elif user_input == "/locate" or user_input == "/l":
+            self.set_location(self.contents)
+        elif user_input == "/help" or user_input == "/?":
+            self.print_help()
+        elif user_input == "/reset" or user_input == "/r":
+            self.contents.clear()
+            self.set_initial_prompt()
+            self.display.info("Conversation history reset")
+        else:
+            return False
+        return True
+
+    async def answer_call(self, user_input: str):        
         logger.debug(f"answer_call received message: {user_input}")
-                        
+
+        if not user_input:
+            return
+
+        if user_input.startswith("/"):
+            self._handle_command(user_input)
+            return
+
+        # Append user output to contents
+        self.contents.append(genai.types.Content(role="user", parts=[genai.types.Part(text=user_input)]))
+
         # Safety valve
         if self.model_calls >= int(self.config.max_model_calls):
             self.display.warn("Max model calls reached")
             self.display.info("This is a safety valve to catch costly looping. You can increase the limit in the config file if needed.")
             self.exit()        
+
         self.model_calls += 1
-
-
-        if user_input == "/exit" or user_input == "/x":
-            self.exit()
-            
-        elif user_input == "/tools" or user_input == "/t":
-            self.print_tools(self.tools)
-            
-        elif user_input == "/conversation" or user_input == "/c":
-            self.print_conversation(self.contents)
-            
-        elif user_input == "/locate" or user_input == "/l":
-            self.set_location(self.contents)
-            
-        elif user_input == "/help" or user_input == "/?":
-            self.print_help()
-            
-        elif user_input == "/reset" or user_input == "/r":
-            self.contents.clear()
-            self.set_initial_prompt(self.contents, self.config)
-            self.display.info("Conversation history reset")
-
-        elif user_input:
-            # Append user output to contents
-            self.contents.append(genai.types.Content(role="user", parts=[genai.types.Part(text=user_input)]))
 
         # Call LLM
         response = self.gclient.models.generate_content(
@@ -176,16 +182,15 @@ Exit:         '/exit' or '/x' to quit
         # Append LLM output to contents
         self.contents.append(response.candidates[0].content)
 
-        # Check for empty response
         if not response.candidates or not response.candidates[0].content or not response.candidates[0].content.parts:
             self.display.warn("*No content returned from model.*")
             logger.warning(f"No content returned from model. Full response: {response}")
             return
 
-        # Deal with LLM output
+        # process model response
         for part in response.candidates[0].content.parts:
-            
-            #  LLM requested function calls
+
+            # Model wants to call a function
             if part.function_call:
                 tool_name = part.function_call.name
                 response = await self.mcpc.execute_tool(tool_name, part.function_call.args)
@@ -195,17 +200,15 @@ Exit:         '/exit' or '/x' to quit
                 )
                 resp = genai.types.Content(role="function", parts=[function_response_part])
                 self.contents.append(resp)
+                # Loop back to get the model's response to the tool output
+                await self.answer_call(user_input="")
+                return
 
-                self.answer_call() # Recursive call to handle any new model output after tool execution
-
-
-            # LLM Text output
+            # Model returned text
             elif part.text:
                 self.display.markdown(part.text)
-                
+            
+            # Who knows what the model returned? Not I.
             else:
                 self.display.warn("Unknown part")
-                s = json.dumps(response, indent=2)
-                self.display.markdown(f"```{s}```")
                 break
-

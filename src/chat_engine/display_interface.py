@@ -17,7 +17,3 @@ class DisplayInterface(ABC):
     @abstractmethod
     def markdown(self, prompt: str) -> str:
         raise NotImplementedError
-
-    @abstractmethod
-    def input(self) -> str:
-        raise NotImplementedError

@@ -31,8 +31,10 @@ async def main():
     await engine.register_tools()
     
     while True:
-        user_input = display.input()
-        await engine.answer_call(user_input)
+        try:
+            await engine.answer_call(display.input())
+        except (KeyboardInterrupt, EOFError):
+            engine.exit()
     
 def run():
     asyncio.run(main())
