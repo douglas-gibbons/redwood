@@ -173,7 +173,7 @@ Exit:         '/exit' or '/x' to quit
         self.model_calls += 1
 
         # Call LLM
-        response = self.gclient.models.generate_content(
+        response = await self.gclient.aio.models.generate_content(
             model = self.model_name,
             contents = self.contents,
             config = self.gemini_config

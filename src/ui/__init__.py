@@ -51,6 +51,7 @@ class Display(DisplayInterface):
             return
         
         self.message_field.value = ""
+        self.message_field.focus()
         self.append_to_chat("You", text)
         
         if self.engine:
