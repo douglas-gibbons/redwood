@@ -34,9 +34,10 @@ class GUI:
             "Send",
             on_click=self.send_button_click,
         )
+        self.progress_ring = ft.ProgressRing(width=24, height=24, visible=False)
         self.page.add(
             self.chat,
-            ft.Row([self.message_field, self.send_button]),
+            ft.Row([self.message_field, self.progress_ring, self.send_button]),
         )
 
     async def send_button_click(self, event=None):
@@ -50,7 +51,21 @@ class GUI:
         await self.append_to_chat("You", text)
         
         if self.engine:
-            await self.engine.answer_call(text)
+            # Show waiting indicator and disable input
+            self.message_field.disabled = True
+            self.send_button.disabled = True
+            self.progress_ring.visible = True
+            self.page.update()
+            
+            try:
+                await self.engine.answer_call(text)
+            finally:
+                # Re-enable inputs regardless of errors
+                self.message_field.disabled = False
+                self.send_button.disabled = False
+                self.progress_ring.visible = False
+                self.page.update()
+                await self.message_field.focus()
 
     async def append_to_chat(self, sender, message, is_markdown=False):
         """Update the UI with new messages."""
