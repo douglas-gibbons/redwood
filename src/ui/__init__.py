@@ -4,6 +4,7 @@ import logging
 import flet as ft
 from chat_engine.chat_engine import ChatEngine
 from chat_engine.display_interface import DisplayInterface
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -164,6 +165,10 @@ class Display(DisplayInterface):
 
     def __init__(self, gui: GUI):
         self.gui = gui
+
+    async def quit(self):
+        await self.gui.page.window.destroy()
+        os._exit(0)
 
     async def info(self, message):
         await self.gui.append_to_chat("System", message)

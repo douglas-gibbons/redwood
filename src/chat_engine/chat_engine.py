@@ -21,7 +21,6 @@ class ChatEngine:
         self.display = display
         logger.info("Starting redwood main")
         
-        
         # Load config file
         self.config = Config(DEFAULT_CONFIG_FILE)
         
@@ -138,10 +137,9 @@ Exit:         '/exit' or '/x' to quit
             ),
         )
         
-
     async def exit(self):
         await self.display.info("Goodbye!")
-        sys.exit(0)
+        await self.display.quit()
 
     async def reset_conversation(self):
         self.contents.clear()
