@@ -13,34 +13,36 @@ class Display(DisplayInterface):
         
         self.page = page
         self.page.title = "Redwood"
-        
+        self.message_field = None    
+        self.engine = None
+    
+    async def initialize(self, engine: ChatEngine):
+        self.engine = engine
         self.message_field = ft.TextField(expand=True, on_submit=self.send_button_click)
-
         # Use ListView for better scrolling behavior
-        self.chat = ft.ListView(expand=True, spacing=10, auto_scroll=True)
-
+        self.chat = ft.ListView(expand=True, spacing=10, auto_scroll=False)
         self.send_button = ft.ElevatedButton(
             "Send",
             on_click=self.send_button_click,
         )
-
         self.page.add(
             self.chat,
             ft.Row([self.message_field, self.send_button]),
         )
-        self.engine = None
-    
-    def info(self, message):
-        self.append_to_chat("System", message)
+        await self.engine.register_tools()
 
-    def warn(self, message):
-        self.append_to_chat("Warning", message)
 
-    def error(self, message):
-        self.append_to_chat("Error", message)
+    async def info(self, message):
+        await self.append_to_chat("System", message)
 
-    def markdown(self, prompt):
-        self.append_to_chat("Redwood", prompt, is_markdown=True)
+    async def warn(self, message):
+        await self.append_to_chat("Warning", message)
+
+    async def error(self, message):
+        await self.append_to_chat("Error", message)
+
+    async def markdown(self, prompt):
+        await self.append_to_chat("Redwood", prompt, is_markdown=True)
         return prompt
 
 
@@ -51,33 +53,77 @@ class Display(DisplayInterface):
             return
         
         self.message_field.value = ""
-        self.message_field.focus()
-        self.append_to_chat("You", text)
+        await self.message_field.focus()
+        await self.append_to_chat("You", text)
         
         if self.engine:
             await self.engine.answer_call(text)
 
-    def append_to_chat(self, sender, message, is_markdown=False):
+    async def append_to_chat(self, sender, message, is_markdown=False):
         """Update the UI with new messages."""
+        is_user = (sender == "You")
+        
+        # Select adaptive material colors based on role
+        if is_user:
+            bgcolor = ft.Colors.PRIMARY_CONTAINER
+            padding = ft.padding.only(left=80, top=5, bottom=5)
+            text_color = ft.Colors.ON_PRIMARY_CONTAINER
+        elif sender == "Redwood":
+            bgcolor = ft.Colors.SECONDARY_CONTAINER
+            padding = ft.padding.only(right=80, top=5, bottom=5)
+            text_color = ft.Colors.ON_SECONDARY_CONTAINER
+        elif sender == "System":
+            bgcolor = ft.Colors.TERTIARY_CONTAINER
+            padding = ft.padding.only(right=80, top=5, bottom=5)
+            text_color = ft.Colors.ON_TERTIARY_CONTAINER
+        elif sender in ["Warning", "Error"]:
+            bgcolor = ft.Colors.ERROR_CONTAINER
+            padding = ft.padding.only(right=80, top=5, bottom=5)
+            text_color = ft.Colors.ON_ERROR_CONTAINER
+        else:
+            bgcolor = ft.Colors.SURFACE_VARIANT
+            padding = ft.padding.only(right=80, top=5, bottom=5)
+            text_color = ft.Colors.ON_SURFACE_VARIANT
+
+        # Render message content
         if is_markdown:
-            self.chat.controls.append(ft.Text(f"{sender}:", weight=ft.FontWeight.BOLD))
+            # Markdown inherits default theme text colors, which generally adapt well.
             content = ft.Markdown(
                 message, 
                 selectable=True, 
                 extension_set=ft.MarkdownExtensionSet.GITHUB_WEB
             )
-            self.chat.controls.append(content)
         else:
-            self.chat.controls.append(ft.Text(f"{sender}:", weight=ft.FontWeight.BOLD))
-            self.chat.controls.append(ft.Text(f"{message}"))
-        
-        self.page.update()
+            content = ft.Text(f"{message}", color=text_color)
 
+        # Build chat bubble
+        bubble = ft.Container(
+            content=ft.Column([
+                ft.Text(f"{sender}", weight=ft.FontWeight.BOLD, size=12, color=text_color),
+                content
+            ], spacing=4),
+            bgcolor=bgcolor,
+            border_radius=ft.border_radius.all(12),
+            padding=15,
+        )
+
+        # Wrap in a directional container
+        wrapper = ft.Container(
+            content=bubble,
+            padding=padding,
+            alignment=ft.Alignment.CENTER_RIGHT if is_user else ft.Alignment.CENTER_LEFT
+        )
+        
+        self.chat.controls.append(wrapper)
+        await self.chat.scroll_to(offset=-1, duration=300)
+        self.page.update()
+        
+        
 async def main(page: ft.Page):
     ui = Display(page)
     engine = ChatEngine(ui)
-    ui.engine = engine  # Link the engine to the UI for callbacks
-    await engine.register_tools()
+    await ui.initialize(engine)
+    await engine.initialize()
     page.update()
 
 def run():

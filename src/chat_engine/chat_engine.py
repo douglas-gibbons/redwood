@@ -21,11 +21,12 @@ class ChatEngine:
         self.display = display
         logger.info("Starting redwood main")
         
-        self.display.info("Welcome to Redwood!")
-        self.print_help()
-
+        
         # Load config file
         self.config = Config(DEFAULT_CONFIG_FILE)
+        
+        # Gemini model name
+        self.model_name = self.config.model.name
 
         if not self.config.exists("model.api_key"):
             raise ValueError("API Key missing from configuration file")
@@ -37,34 +38,29 @@ class ChatEngine:
             filename=self.config.logging.file
         )
 
-        self.gclient = genai.Client(api_key=self.config.model.api_key)
-
-        self.mcp_servers = []
-        for server_config in self.config.mcp:
-            server = mcp_client.dict_to_server(server_config)
-            self.mcp_servers.append(server)
-        
-        token_storage_config = None
-        if self.config.exists("token_storage.enabled") and self.config.token_storage.enabled:
-            token_storage_config = mcp_client.TokenStorageConfig(
-                enabled = self.config.token_storage.enabled,
-                location = os.path.expanduser(self.config.token_storage.location),
-                encryption_key = self.config.token_storage.encryption_key
-            )
-        self.mcpc = mcp_client.MCPClient(servers=self.mcp_servers, log_file=self.config.logging.file, token_storage_config=token_storage_config)
-        
-        # Gemini model name
-        self.model_name = self.config.model.name
-        self.display.markdown(f"Using model: `{self.model_name}`")
-
         # Chat contents
         self.contents = []
 
+        # MCP servers
+        self.mcp_servers = []
+
         self.model_calls: int = 0
 
-    def print_tools(self, tools: list):
+
+    async def initialize(self):
+        # set up connetion to Gemini and MCP servers
+        self.gclient = genai.Client(api_key=self.config.model.api_key)
+
+        await self.display.info("Welcome to Redwood!")
+        await self.print_help()
+        await self.display.markdown(f"Using model: `{self.model_name}`")
+        await self.register_tools()
         
-        self.display.markdown("Available Tools:")
+
+    async def print_tools(self, tools: list):
+        
+        output = ""
+        output += "# Available Tools:\n"
         tools_by_server = {}
         for tool in tools:
             server_name, tool_name = mcp_client.get_tool_name(tool.name)
@@ -73,33 +69,34 @@ class ChatEngine:
             tools_by_server[server_name].append((tool_name, tool))
         
         for server_name, server_tools in tools_by_server.items():
-            self.display.markdown(f"## Server: {server_name}")
+            output += f"## Server: {server_name}\n"
             for tool_name, tool in server_tools:
-                self.display.markdown(f"###  {tool_name}")
+                output += f"###  {tool_name}\n"
                 if tool.description:
-                    self.display.markdown(f"_{tool.description}_")
-                if tool.inputSchema:
-                    self.display.markdown(f"Args: {tool.inputSchema}")
-
-    def set_location(self, contents):
+                    output += f"{tool.description}\n"
+                # if tool.inputSchema:
+                #   output += f"Args: {tool.inputSchema}\n"
+        await self.display.markdown(output)
+                
+    async def set_location(self, contents):
         location = os.getcwd()
-        self.display.info(f"Location set to {location}")
+        await self.display.info(f"Location set to {location}")
         contents.append(genai.types.Content(role="user", parts=[genai.types.Part(text=f"Use \"{location}\" as the working directory. File operations should be relative to this directory.")]))
         contents.append(genai.types.Content(role="model", parts=[genai.types.Part(text="Understood")]))
         
-    def print_conversation(self, contents):
-        self.display.info("Conversation History:")
-        self.display.markdown(f"```{contents}```")
+    async def print_conversation(self, contents):
+        await self.display.info("Conversation History:")
+        await self.display.markdown(f"```{contents}```")
 
-    def set_initial_prompt(self):
+    async def set_initial_prompt(self):
         # Set initial prompt
         # Gemini only has user and system prompts
         if self.config.exists("prompt"):
             self.contents.append(genai.types.Content(role="user", parts=[genai.types.Part(text=self.config.prompt)]))
             self.contents.append(genai.types.Content(role="model", parts=[genai.types.Part(text="Understood")]))
 
-    def print_help(self):
-        self.display.markdown("""
+    async def print_help(self):
+        await self.display.markdown("""
 ```
 You can interact with the AI model and use various tools via MCP servers by typing these commands:                              
 
@@ -115,8 +112,24 @@ Exit:         '/exit' or '/x' to quit
 
         
     async def register_tools(self):
+        
+        self.mcp_servers = []
+        for server_config in self.config.mcp:
+            server = mcp_client.dict_to_server(server_config)
+            self.mcp_servers.append(server)
+        
+        token_storage_config = None
+        if self.config.exists("token_storage.enabled") and self.config.token_storage.enabled:
+            token_storage_config = mcp_client.TokenStorageConfig(
+                enabled = self.config.token_storage.enabled,
+                location = os.path.expanduser(self.config.token_storage.location),
+                encryption_key = self.config.token_storage.encryption_key
+            )
+        self.mcpc = mcp_client.MCPClient(servers=self.mcp_servers, log_file=self.config.logging.file, token_storage_config=token_storage_config)
+        
+
         self.tools = await self.mcpc.list_tools()
-        self.set_initial_prompt()
+        await self.set_initial_prompt()
 
         self.gemini_config = genai.types.GenerateContentConfig(
             tools = self.tools,
@@ -126,27 +139,31 @@ Exit:         '/exit' or '/x' to quit
         )
         
 
-    def exit(self):
-        self.display.info("Goodbye!")
+    async def exit(self):
+        await self.display.info("Goodbye!")
         sys.exit(0)
 
-    def _handle_command(self, user_input: str) -> bool:
+    async def reset_conversation(self):
+        self.contents.clear()
+        self.model_calls = 0
+        await self.set_initial_prompt()
+        await self.display.info("Conversation history reset")
+
+    async def _handle_command(self, user_input: str) -> bool:
 
         """Handles slash commands. Returns True if a command was processed."""
         if user_input == "/exit" or user_input == "/x":
-            self.exit()
+            await self.exit()
         elif user_input == "/tools" or user_input == "/t":
-            self.print_tools(self.tools)
+            await self.print_tools(self.tools)
         elif user_input == "/conversation" or user_input == "/c":
-            self.print_conversation(self.contents)
+            await self.print_conversation(self.contents)
         elif user_input == "/locate" or user_input == "/l":
-            self.set_location(self.contents)
+            await self.set_location(self.contents)
         elif user_input == "/help" or user_input == "/?":
-            self.print_help()
+            await self.print_help()
         elif user_input == "/reset" or user_input == "/r":
-            self.contents.clear()
-            self.set_initial_prompt()
-            self.display.info("Conversation history reset")
+            await self.reset_conversation()
         else:
             return False
         return True
@@ -155,7 +172,7 @@ Exit:         '/exit' or '/x' to quit
         logger.debug(f"answer_call received message: {user_input}")
 
         if user_input is not None and user_input.startswith("/"):
-            self._handle_command(user_input)
+            await self._handle_command(user_input)
             return
 
         if user_input is not None:
@@ -165,9 +182,9 @@ Exit:         '/exit' or '/x' to quit
 
         # Safety valve
         if self.model_calls >= int(self.config.max_model_calls):
-            self.display.warn("Max model calls reached")
-            self.display.info("This is a safety valve to catch costly looping. You can increase the limit in the config file if needed.")
-            self.exit()        
+            await self.display.warn("Max model calls reached")
+            await self.display.info("This is a safety valve to catch costly looping. You can increase the limit in the config file if needed.")
+            await self.exit()        
 
         self.model_calls += 1
 
@@ -182,7 +199,7 @@ Exit:         '/exit' or '/x' to quit
         self.contents.append(response.candidates[0].content)
 
         if not response.candidates or not response.candidates[0].content or not response.candidates[0].content.parts:
-            self.display.warn("*No content returned from model.*")
+            await self.display.warn("*No content returned from model.*")
             logger.warning(f"No content returned from model. Full response: {response}")
             return
 
@@ -205,9 +222,9 @@ Exit:         '/exit' or '/x' to quit
 
             # Model returned text
             elif part.text:
-                self.display.markdown(part.text)
+                await self.display.markdown(part.text)
             
             # Who knows what the model returned? Not I.
             else:
-                self.display.warn("Unknown part")
+                await self.display.warn("Unknown part")
                 break

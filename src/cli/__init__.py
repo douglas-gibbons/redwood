@@ -10,16 +10,16 @@ class Display(DisplayInterface):
     def __init__(self):
         self.console = Console()
 
-    def info(self, message):
+    async def info(self, message):
         self.console.print(message)
 
-    def markdown(self, message):
+    async def markdown(self, message):
         self.console.print(Markdown(message))
 
-    def warn(self, message):
+    async def warn(self, message):
         self.console.print(f"[bold red]{message}[/bold red]")
 
-    def error(self, message):
+    async def error(self, message):
         self.console.print(f"[bold red]{message}[/bold red]")
 
     def input(self):
@@ -28,7 +28,7 @@ class Display(DisplayInterface):
 async def main():
     display = Display()
     engine = ChatEngine(display)
-    await engine.register_tools()
+    await engine.initialize()
     
     while True:
         try:
