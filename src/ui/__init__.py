@@ -22,6 +22,12 @@ class GUI:
     def initialize(self, display: "Display", engine: ChatEngine):
         self.engine = engine
         self.display = display
+        
+        self.page.fonts = {
+            "Aleo Bold Italic": "https://raw.githubusercontent.com/google/fonts/master/ofl/aleo/Aleo-BoldItalic.ttf"
+        }
+        self.page.theme = ft.Theme(font_family="Aleo Bold Italic")
+        
         self.message_field = ft.TextField(
             expand=True, 
             on_submit=self.send_button_click,
@@ -134,10 +140,10 @@ class GUI:
         if icon_name:
             header = ft.Row([
                 ft.Icon(icon_name, size=16, color=text_color),
-                ft.Text(f"{sender}", weight=ft.FontWeight.BOLD, size=12, color=text_color)
+                ft.Text(f"{sender}", size=12, color=text_color)
             ], spacing=5)
         else:
-            header = ft.Text(f"{sender}", weight=ft.FontWeight.BOLD, size=12, color=text_color)
+            header = ft.Text(f"{sender}", size=12, color=text_color)
 
         # Build chat bubble
         bubble = ft.Container(
