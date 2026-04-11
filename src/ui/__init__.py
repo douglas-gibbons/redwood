@@ -25,7 +25,8 @@ class GUI:
             expand=True, 
             on_submit=self.send_button_click,
             multiline=True,
-            shift_enter=True
+            shift_enter=True,
+            autofocus=True
         )
         # Use ListView for better scrolling behavior. 
         # reverse=True anchors the list to the bottom, bypassing the Flet 0.84 scroll defect.
@@ -41,29 +42,36 @@ class GUI:
         )
 
     async def disable_input(self):
-        self.message_field.disabled = True
+        self._processing = True
         self.send_button.disabled = True
         self.progress_ring.visible = True
         self.page.update()
 
+    async def _focus_input(self):
+        await asyncio.sleep(0.2)
+        try:
+            await self.message_field.focus()
+        except:
+            pass
+
     async def enable_input(self):
-        self.message_field.disabled = False
+        self._processing = False
         self.send_button.disabled = False
         self.progress_ring.visible = False
         self.page.update()
-        await self.message_field.focus()
+        self.page.run_task(self._focus_input)
 
     async def send_button_click(self, event=None):
         """Handle user message submission."""
+        if getattr(self, "_processing", False):
+            return
+
         text = self.message_field.value.strip()
         if not text:
             return
         
         self.message_field.value = ""
-        
-        async with asyncio.TaskGroup() as tg:
-            tg.create_task(self.message_field.focus())
-            tg.create_task(self.append_to_chat("You", text))
+        await self.append_to_chat("You", text)
         
         if self.engine:
             # Show waiting indicator and disable input
