@@ -21,9 +21,15 @@ class GUI:
     def initialize(self, display: "Display", engine: ChatEngine):
         self.engine = engine
         self.display = display
-        self.message_field = ft.TextField(expand=True, on_submit=self.send_button_click)
-        # Use ListView for better scrolling behavior
-        self.chat = ft.ListView(expand=True, spacing=10, auto_scroll=False)
+        self.message_field = ft.TextField(
+            expand=True, 
+            on_submit=self.send_button_click,
+            multiline=True,
+            shift_enter=True
+        )
+        # Use ListView for better scrolling behavior. 
+        # reverse=True anchors the list to the bottom, bypassing the Flet 0.84 scroll defect.
+        self.chat = ft.ListView(expand=True, spacing=10, auto_scroll=False, reverse=True)
         self.send_button = ft.ElevatedButton(
             "Send",
             on_click=self.send_button_click,
@@ -100,9 +106,8 @@ class GUI:
             padding=padding,
             alignment=ft.Alignment.CENTER_RIGHT if is_user else ft.Alignment.CENTER_LEFT
         )
-        
-        self.chat.controls.append(wrapper)
-        await self.chat.scroll_to(offset=-1, duration=300)
+        # Insert at index 0 so it appears at the bottom of the reversed list
+        self.chat.controls.insert(0, wrapper)
         self.page.update()
 
 
