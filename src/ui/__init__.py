@@ -29,7 +29,7 @@ class GUI:
         )
         # Use ListView for better scrolling behavior. 
         # reverse=True anchors the list to the bottom, bypassing the Flet 0.84 scroll defect.
-        self.chat = ft.ListView(expand=True, spacing=10, auto_scroll=False, reverse=True)
+        self.chat = ft.ListView(expand=True, spacing=3, auto_scroll=False, reverse=True)
         self.send_button = ft.ElevatedButton(
             "Send",
             on_click=self.send_button_click,
@@ -112,15 +112,33 @@ class GUI:
         else:
             content = ft.Text(f"{message}", color=text_color)
 
+        icon_name = None
+        if is_user:
+            icon_name = ft.Icons.PERSON
+        elif sender == "Redwood":
+            icon_name = ft.Icons.SMART_TOY
+        elif sender == "System":
+            icon_name = ft.Icons.SETTINGS
+        elif sender in ["Warning", "Error"]:
+            icon_name = ft.Icons.WARNING
+            
+        if icon_name:
+            header = ft.Row([
+                ft.Icon(icon_name, size=16, color=text_color),
+                ft.Text(f"{sender}", weight=ft.FontWeight.BOLD, size=12, color=text_color)
+            ], spacing=5)
+        else:
+            header = ft.Text(f"{sender}", weight=ft.FontWeight.BOLD, size=12, color=text_color)
+
         # Build chat bubble
         bubble = ft.Container(
             content=ft.Column([
-                ft.Text(f"{sender}", weight=ft.FontWeight.BOLD, size=12, color=text_color),
+                header,
                 content
             ], spacing=4),
             bgcolor=bgcolor,
-            border_radius=ft.border_radius.all(12),
-            padding=15,
+            border_radius=ft.border_radius.all(4),
+            padding=8,
         )
 
         # Wrap in a directional container
@@ -138,9 +156,6 @@ class Display(DisplayInterface):
 
     def __init__(self, gui: GUI):
         self.gui = gui
-        
-    async def initialize(self, engine: ChatEngine):
-        await engine.register_tools()
 
     async def info(self, message):
         await self.gui.append_to_chat("System", message)
@@ -165,9 +180,7 @@ async def main(page: ft.Page):
 
     # Disable input while engine initializes
     await gui.disable_input()
-    async with asyncio.TaskGroup() as tg:
-        tg.create_task(display.initialize(engine))
-        tg.create_task(engine.initialize())
+    await engine.initialize()
     await gui.enable_input()
 
     page.update()
