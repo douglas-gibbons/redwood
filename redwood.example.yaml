@@ -13,6 +13,9 @@ logging:
   level: INFO
   file: /tmp/redwood.log
 
+ui:
+  dark_mode: true
+
 token_storage:
   enabled: false
   location: ~/config/redwood_auth_tokens/ # Directory

@@ -184,6 +184,11 @@ async def main(page: ft.Page):
     display = Display(gui)
     engine = ChatEngine(display)
 
+    if engine.config.exists("ui.dark_mode"):
+        page.theme_mode = ft.ThemeMode.DARK if engine.config.ui.dark_mode else ft.ThemeMode.LIGHT
+    else:
+        page.theme_mode = ft.ThemeMode.SYSTEM
+
     gui.initialize(display, engine)
 
     # Disable input while engine initializes
