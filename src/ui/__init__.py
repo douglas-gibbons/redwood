@@ -7,17 +7,20 @@ from chat_engine.display_interface import DisplayInterface
 
 logger = logging.getLogger(__name__)
 
-class Display(DisplayInterface):
+class GUI:
 
-    def __init__(self,page: ft.Page):
-        
+    def __init__(self, page: ft.Page):
         self.page = page
         self.page.title = "Redwood"
-        self.message_field = None    
+        self.message_field = None
+        self.chat = None
+        self.send_button = None
         self.engine = None
-    
-    async def initialize(self, engine: ChatEngine):
+        self.display = None
+
+    def initialize(self, display: "Display", engine: ChatEngine):
         self.engine = engine
+        self.display = display
         self.message_field = ft.TextField(expand=True, on_submit=self.send_button_click)
         # Use ListView for better scrolling behavior
         self.chat = ft.ListView(expand=True, spacing=10, auto_scroll=False)
@@ -29,22 +32,6 @@ class Display(DisplayInterface):
             self.chat,
             ft.Row([self.message_field, self.send_button]),
         )
-        await self.engine.register_tools()
-
-
-    async def info(self, message):
-        await self.append_to_chat("System", message)
-
-    async def warn(self, message):
-        await self.append_to_chat("Warning", message)
-
-    async def error(self, message):
-        await self.append_to_chat("Error", message)
-
-    async def markdown(self, prompt):
-        await self.append_to_chat("Redwood", prompt, is_markdown=True)
-        return prompt
-
 
     async def send_button_click(self, event=None):
         """Handle user message submission."""
@@ -117,13 +104,41 @@ class Display(DisplayInterface):
         self.chat.controls.append(wrapper)
         await self.chat.scroll_to(offset=-1, duration=300)
         self.page.update()
+
+
+class Display(DisplayInterface):
+
+    def __init__(self, gui: GUI):
+        self.gui = gui
         
-        
+    async def initialize(self, engine: ChatEngine):
+        await engine.register_tools()
+
+    async def info(self, message):
+        await self.gui.append_to_chat("System", message)
+
+    async def warn(self, message):
+        await self.gui.append_to_chat("Warning", message)
+
+    async def error(self, message):
+        await self.gui.append_to_chat("Error", message)
+
+    async def markdown(self, prompt):
+        await self.gui.append_to_chat("Redwood", prompt, is_markdown=True)
+        return prompt
+
 async def main(page: ft.Page):
-    ui = Display(page)
-    engine = ChatEngine(ui)
-    await ui.initialize(engine)
-    await engine.initialize()
+
+    gui = GUI(page)
+    display = Display(gui)
+    engine = ChatEngine(display)
+
+    gui.initialize(display, engine)
+
+    async with asyncio.TaskGroup() as tg:
+        tg.create_task(display.initialize(engine))
+        tg.create_task(engine.initialize())
+    
     page.update()
 
 def run():
