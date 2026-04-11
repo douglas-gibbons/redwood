@@ -5,10 +5,10 @@ from google import genai
 from rich.markdown import Markdown
 from .display_interface import DisplayInterface
 import mcp_client
-import pprint
 import logging
 from config import Config
 import sys
+import asyncio
 
 DEFAULT_CONFIG_FILE = os.path.expanduser("~/.config/redwood.yaml")
 
@@ -52,10 +52,10 @@ class ChatEngine:
         self.gclient = genai.Client(api_key=self.config.model.api_key)
 
         await self.display.info("Welcome to Redwood!")
-        await self.print_help()
+        async with asyncio.TaskGroup() as tg:
+            tg.create_task(self.print_help())
+            tg.create_task(self.register_tools())
         await self.display.markdown(f"Using model: `{self.model_name}`")
-        await self.register_tools()
-        
 
     async def print_tools(self, tools: list):
         

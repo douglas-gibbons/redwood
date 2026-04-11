@@ -40,6 +40,19 @@ class GUI:
             ft.Row([self.message_field, self.progress_ring, self.send_button]),
         )
 
+    async def disable_input(self):
+        self.message_field.disabled = True
+        self.send_button.disabled = True
+        self.progress_ring.visible = True
+        self.page.update()
+
+    async def enable_input(self):
+        self.message_field.disabled = False
+        self.send_button.disabled = False
+        self.progress_ring.visible = False
+        self.page.update()
+        await self.message_field.focus()
+
     async def send_button_click(self, event=None):
         """Handle user message submission."""
         text = self.message_field.value.strip()
@@ -47,25 +60,20 @@ class GUI:
             return
         
         self.message_field.value = ""
-        await self.message_field.focus()
-        await self.append_to_chat("You", text)
+        
+        async with asyncio.TaskGroup() as tg:
+            tg.create_task(self.message_field.focus())
+            tg.create_task(self.append_to_chat("You", text))
         
         if self.engine:
             # Show waiting indicator and disable input
-            self.message_field.disabled = True
-            self.send_button.disabled = True
-            self.progress_ring.visible = True
-            self.page.update()
+            await self.disable_input()
             
             try:
                 await self.engine.answer_call(text)
             finally:
                 # Re-enable inputs regardless of errors
-                self.message_field.disabled = False
-                self.send_button.disabled = False
-                self.progress_ring.visible = False
-                self.page.update()
-                await self.message_field.focus()
+                await self.enable_input()
 
     async def append_to_chat(self, sender, message, is_markdown=False):
         """Update the UI with new messages."""
@@ -155,10 +163,13 @@ async def main(page: ft.Page):
 
     gui.initialize(display, engine)
 
+    # Disable input while engine initializes
+    await gui.disable_input()
     async with asyncio.TaskGroup() as tg:
         tg.create_task(display.initialize(engine))
         tg.create_task(engine.initialize())
-    
+    await gui.enable_input()
+
     page.update()
 
 def run():
