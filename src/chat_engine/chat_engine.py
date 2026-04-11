@@ -27,9 +27,6 @@ class ChatEngine:
         # Gemini model name
         self.model_name = self.config.model.name
 
-        if not self.config.exists("model.api_key"):
-            raise ValueError("API Key missing from configuration file")
-
         logging.basicConfig(
             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
             level=self.config.logging.level,
@@ -46,15 +43,27 @@ class ChatEngine:
         self.model_calls: int = 0
 
 
+    async def setup_api_key(self):
+        await self.display.error("""
+To use Redwood, you need to provide an API key for the Gemini model in the config file.
+You can get an API key by signing up for the Gemini API waitlist here: https://developers.generativeai.google.dev/waitlist.
+Once you have an API key, add it to the config file at {DEFAULT_CONFIG_FILE} under the `model.api_key` field.
+""")  
+     
     async def initialize(self):
-        # set up connetion to Gemini and MCP servers
-        self.gclient = genai.Client(api_key=self.config.model.api_key)
 
-        await self.display.info("Welcome to Redwood!")
-        async with asyncio.TaskGroup() as tg:
-            tg.create_task(self.print_help())
-            tg.create_task(self.register_tools())
-        await self.display.markdown(f"Using model: `{self.model_name}`")
+        if not self.config.exists("model.api_key"):
+            await self.setup_api_key()
+        else:
+
+            # set up connetion to Gemini and MCP servers
+            self.gclient = genai.Client(api_key=self.config.model.api_key)
+            
+            await self.display.info("Welcome to Redwood!")
+            async with asyncio.TaskGroup() as tg:
+                tg.create_task(self.print_help())
+                tg.create_task(self.register_tools())
+            await self.display.markdown(f"Using model: `{self.model_name}`")
 
     async def print_tools(self, tools: list):
         
