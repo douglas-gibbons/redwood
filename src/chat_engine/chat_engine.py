@@ -44,18 +44,25 @@ class ChatEngine:
 
 
     async def setup_api_key(self):
-        await self.display.error("""
+        await self.display.error("API key not found in config file."
+)
+        await self.display.markdown("""
 To use Redwood, you need to provide an API key for the Gemini model in the config file.
-You can get an API key by signing up for the Gemini API waitlist here: https://developers.generativeai.google.dev/waitlist.
-Once you have an API key, add it to the config file at {DEFAULT_CONFIG_FILE} under the `model.api_key` field.
-""")  
-     
+                                    
+You can get an API key by signing up for the Gemini API waitlist here: [aistudio.google.com/api-keys](https://aistudio.google.com/api-keys).
+
+Once you have an API key replace the "API-KEY-HERE" placeholder in the config file with your key.
+
+The config file is located at `~/.config/redwood.yaml`. You can edit it with any text editor.
+                                    
+Type "/exit" to quit.
+""")
+
     async def initialize(self):
 
-        if not self.config.exists("model.api_key"):
+        if not self.config.exists("model.api_key") or self.config.model.api_key == "API-KEY-HERE":
             await self.setup_api_key()
         else:
-
             # set up connetion to Gemini and MCP servers
             self.gclient = genai.Client(api_key=self.config.model.api_key)
             
