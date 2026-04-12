@@ -55,30 +55,29 @@ mcp:
 
   ## Sequential Thinking
   #
-  # - name: sequentialthinking
-  #   ask: false # ask the user before running tools
-  #   command: npx
-  #   args:
-  #     - "-y"
-  #     - "@modelcontextprotocol/server-sequential-thinking"
+  - name: sequentialthinking
+    ask: false # ask the user before running tools
+    command: npx
+    args:
+      - "-y"
+      - "@modelcontextprotocol/server-sequential-thinking"
 
   ## DuckDuckGo web search
   #
-  # - name: duckduckgo
-  #   ask: false
-  #   command: uvx
-  #   args:
-  #     - "duckduckgo-mcp-server"
+  - name: duckduckgo
+    ask: false
+    command: uvx
+    args:
+      - "duckduckgo-mcp-server"
 
   ## Filesystem
-  #
-  # - name: filesystem
-  #   ask: true
-  #   command: npx
-  #   args:
-  #     - "-y"
-  #     - "@modelcontextprotocol/server-filesystem"
-  #     - "/home"
+  - name: filesystem
+    ask: true
+    command: npx
+    args:
+      - "-y"
+      - "@modelcontextprotocol/server-filesystem"
+      - "/home"
 
   ## Atlassian
   ##
@@ -104,3 +103,9 @@ prompt: |
   * If you are unsure about something, use the tools to find out more information
   * Always think step-by-step about how to use the tools to achieve the user's goals
   * The agent configuration file is located at ~/ .config/redwood.yaml
+
+  # Images
+
+  * When generating images, use the image_generator tool
+  * You can use img src tags to display images in your responses, like this: ![alt text](path/to/image.png)
+  * Always let the user know where an image is saved when you generate one, so they can find it later
