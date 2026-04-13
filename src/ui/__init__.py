@@ -1,131 +1,242 @@
 import asyncio
 import threading
 import logging
-import tkinter as tk
-import customtkinter as ctk
+import flet as ft
 from chat_engine.chat_engine import ChatEngine
 from chat_engine.display_interface import DisplayInterface
+import os
 
 logger = logging.getLogger(__name__)
 
+class GUI:
 
-class RedwoodUI(DisplayInterface):
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Redwood AI")
-        self.root.geometry("800x600")
+    def __init__(self, page: ft.Page):
+        self.page = page
+        self.page.title = "Redwood"
+        self.message_field = None
+        self.chat = None
+        self.tool_logs = None
+        self.send_button = None
+        self.engine = None
+        self.display = None
+
+    def initialize(self, display: "Display", engine: ChatEngine):
+        self.engine = engine
+        self.display = display
         
-        # UI Setup
-        self.chat_display = ctk.CTkTextbox(self.root, activate_scrollbars=True, wrap="word")
-        self.chat_display.pack(padx=20, pady=20, fill=tk.BOTH, expand=True)
-        self.chat_display.configure(state='disabled')
+        self.page.fonts = {
+            "Aleo Bold Italic": "https://raw.githubusercontent.com/google/fonts/master/ofl/aleo/Aleo-BoldItalic.ttf"
+        }
+        self.page.theme = ft.Theme(font_family="Aleo Bold Italic")
         
-        input_frame = ctk.CTkFrame(self.root, fg_color="transparent")
-        input_frame.pack(padx=20, pady=(0, 20), fill=tk.X)
+        self.message_field = ft.TextField(
+            expand=True, 
+            on_submit=self.send_button_click,
+            multiline=True,
+            shift_enter=True,
+            autofocus=True
+        )
+        # Use ListView for better scrolling behavior. 
+        # reverse=True anchors the list to the bottom, bypassing the Flet 0.84 scroll defect.
+        self.chat = ft.ListView(expand=True, spacing=3, auto_scroll=False, reverse=True)
+        self.tool_logs = ft.ListView(expand=True, spacing=3, auto_scroll=False, reverse=True)
         
-        self.user_input = ctk.CTkEntry(input_frame, placeholder_text="Type your message...")
-        self.user_input.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 10))
-        self.user_input.bind("<Return>", self.send_message)
+        self.send_button = ft.ElevatedButton(
+            "Send",
+            on_click=self.send_button_click,
+        )
+        self.progress_ring = ft.ProgressRing(width=24, height=24, visible=False)
         
-        self.send_button = ctk.CTkButton(input_frame, text="Send", command=self.send_message, width=100)
-        self.send_button.pack(side=tk.RIGHT)
-        
-        # Menu
-        menubar = tk.Menu(self.root)
-        self.root.config(menu=menubar)
-        
-        command_menu = tk.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="Commands", menu=command_menu)
-        command_menu.add_command(label="List Tools", command=self.cmd_tools)
-        command_menu.add_command(label="Set Location", command=self.cmd_locate)
-        command_menu.add_command(label="Reset Conversation", command=self.cmd_reset)
-        command_menu.add_separator()
-        command_menu.add_command(label="Exit", command=self.root.quit)
-        
-        # State for blocking input
-        self.input_ready_event = threading.Event()
-        self.input_value = ""
-        
-        # Background thread for the ChatEngine
-        self.thread = threading.Thread(target=self.run_engine, daemon=True)
-        self.thread.start()
+        main_area = ft.Row([
+            ft.Container(content=self.chat, expand=3),
+            ft.VerticalDivider(width=1, color=ft.Colors.OUTLINE_VARIANT),
+            ft.Container(content=self.tool_logs, expand=1)
+        ], expand=True)
 
-    def run_engine(self):
-        """Runs the async ChatEngine in the background thread."""
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        engine = ChatEngine(self)
-        loop.run_until_complete(engine.engine())
+        self.page.add(
+            main_area,
+            ft.Row([self.message_field, self.progress_ring, self.send_button]),
+        )
 
-    # DisplayInterface Implementation
+    async def disable_input(self):
+        self._processing = True
+        self.send_button.disabled = True
+        self.progress_ring.visible = True
+        self.page.update()
 
-    def info(self, message):
-        self.append_to_chat("System", message)
+    async def _focus_input(self):
+        await asyncio.sleep(0.2)
+        try:
+            await self.message_field.focus()
+        except:
+            pass
 
-    def warn(self, message):
-        self.append_to_chat("Warning", message)
+    async def enable_input(self):
+        self._processing = False
+        self.send_button.disabled = False
+        self.progress_ring.visible = False
+        self.page.update()
+        self.page.run_task(self._focus_input)
 
-    def error(self, message):
-        self.append_to_chat("Error", message)
+    async def send_button_click(self, event=None):
+        """Handle user message submission."""
+        if getattr(self, "_processing", False):
+            return
 
-    def markdown(self, prompt):
-        self.append_to_chat("Redwood", prompt)
-        return prompt
-
-    def input(self):
-        """Blocks the background thread until input is ready from the UI."""
-        self.root.after(0, lambda: self.set_input_state('normal'))
-        self.input_ready_event.wait()
-        self.input_ready_event.clear()
-        self.root.after(0, lambda: self.set_input_state('disabled'))
-        return self.input_value
-
-    # UI Helpers
-
-    def set_input_state(self, state):
-        self.user_input.configure(state=state)
-        self.send_button.configure(state=state)
-        if state == 'normal':
-            self.user_input.focus()
-
-    def append_to_chat(self, sender, message):
-        def _append():
-            self.chat_display.configure(state='normal')
-            self.chat_display.insert(tk.END, f"{sender}:\n{message}\n\n")
-            self.chat_display.see(tk.END)
-            self.chat_display.configure(state='disabled')
-        self.root.after(0, _append)
-
-    def send_message(self, event=None):
-        text = self.user_input.get().strip() if hasattr(self.user_input, "get") else ""
+        text = self.message_field.value.strip()
         if not text:
             return
-        self.user_input.delete(0, tk.END)
-        self.append_to_chat("You", text)
-        self.input_value = text
-        self.input_ready_event.set()
+        
+        self.message_field.value = ""
+        await self.append_to_chat("You", text)
+        
+        if self.engine:
+            # Show waiting indicator and disable input
+            await self.disable_input()
+            
+            try:
+                await self.engine.answer_call(text)
+            finally:
+                # Re-enable inputs regardless of errors
+                await self.enable_input()
 
-    def cmd_tools(self):
-        self.user_input.delete(0, tk.END)
-        self.user_input.insert(0, "/tools")
-        self.send_message()
+    async def append_to_chat(self, sender, message, is_markdown=False):
+        """Update the UI with new messages."""
+        is_user = (sender == "You")
+        
+        # Select adaptive material colors based on role
+        if is_user:
+            bgcolor = ft.Colors.PRIMARY_CONTAINER
+            padding = ft.padding.only(left=80, top=5, bottom=5)
+            text_color = ft.Colors.ON_PRIMARY_CONTAINER
+        elif sender == "Redwood":
+            bgcolor = ft.Colors.SECONDARY_CONTAINER
+            padding = ft.padding.only(right=80, top=5, bottom=5)
+            text_color = ft.Colors.ON_SECONDARY_CONTAINER
+        elif sender == "System":
+            bgcolor = ft.Colors.TERTIARY_CONTAINER
+            padding = ft.padding.only(right=80, top=5, bottom=5)
+            text_color = ft.Colors.ON_TERTIARY_CONTAINER
+        elif sender in ["Warning", "Error"]:
+            bgcolor = ft.Colors.ERROR_CONTAINER
+            padding = ft.padding.only(right=80, top=5, bottom=5)
+            text_color = ft.Colors.ON_ERROR_CONTAINER
+        else:
+            bgcolor = ft.Colors.PRIMARY_CONTAINER
+            padding = ft.padding.only(right=80, top=5, bottom=5)
+            text_color = ft.Colors.ON_PRIMARY_CONTAINER
 
-    def cmd_locate(self):
-        self.user_input.delete(0, tk.END)
-        self.user_input.insert(0, "/locate")
-        self.send_message()
+        # Render message content
+        if is_markdown:
+            # Markdown inherits default theme text colors, which generally adapt well.
+            content = ft.Markdown(
+                message, 
+                selectable=True, 
+                extension_set=ft.MarkdownExtensionSet.GITHUB_WEB
+            )
+        else:
+            content = ft.Text(f"{message}", color=text_color)
 
-    def cmd_reset(self):
-        self.user_input.delete(0, tk.END)
-        self.user_input.insert(0, "/reset")
-        self.send_message()
+        icon_name = None
+        if is_user:
+            icon_name = ft.Icons.PERSON
+        elif sender == "Redwood":
+            icon_name = ft.Icons.SMART_TOY
+        elif sender == "System":
+            icon_name = ft.Icons.SETTINGS
+        elif sender in ["Warning", "Error"]:
+            icon_name = ft.Icons.WARNING
+            
+        if icon_name:
+            header = ft.Row([
+                ft.Icon(icon_name, size=16, color=text_color),
+                ft.Text(f"{sender}", size=12, color=text_color)
+            ], spacing=5)
+        else:
+            header = ft.Text(f"{sender}", size=12, color=text_color)
+
+        # Build chat bubble
+        bubble = ft.Container(
+            content=ft.Column([
+                header,
+                content
+            ], spacing=4),
+            bgcolor=bgcolor,
+            border_radius=ft.border_radius.all(4),
+            padding=8,
+        )
+
+        # Wrap in a directional container
+        wrapper = ft.Container(
+            content=bubble,
+            padding=padding,
+            alignment=ft.Alignment.CENTER_RIGHT if is_user else ft.Alignment.CENTER_LEFT
+        )
+        # Insert at index 0 so it appears at the bottom of the reversed list
+        self.chat.controls.insert(0, wrapper)
+        self.page.update()
+
+    async def append_to_tool_log(self, message: str):
+        """Update the UI with new tool log messages."""
+        text_color = ft.Colors.ON_SECONDARY_CONTAINER
+        
+        content = ft.Text(f"{message}", size=12, color=text_color, font_family="monospace")
+        
+        bubble = ft.Container(
+            content=content,
+            bgcolor=ft.Colors.SECONDARY_CONTAINER,
+            border_radius=ft.border_radius.all(4),
+            padding=8,
+        )
+        
+        self.tool_logs.controls.insert(0, bubble)
+        self.page.update()
+
+
+class Display(DisplayInterface):
+
+    def __init__(self, gui: GUI):
+        self.gui = gui
+
+    async def quit(self):
+        await self.gui.page.window.destroy()
+        os._exit(0)
+
+    async def info(self, message):
+        await self.gui.append_to_chat("System", message)
+
+    async def warn(self, message):
+        await self.gui.append_to_chat("Warning", message)
+
+    async def error(self, message):
+        await self.gui.append_to_chat("Error", message)
+
+    async def markdown(self, prompt):
+        await self.gui.append_to_chat("Redwood", prompt, is_markdown=True)
+        return prompt
+    
+    async def tool_log(self, message: str):
+        await self.gui.append_to_tool_log(message)
+
+async def main(page: ft.Page):
+
+    gui = GUI(page)
+    display = Display(gui)
+    engine = ChatEngine(display)
+
+    if engine.config.exists("ui.dark_mode"):
+        page.theme_mode = ft.ThemeMode.DARK if engine.config.ui.dark_mode else ft.ThemeMode.LIGHT
+    else:
+        page.theme_mode = ft.ThemeMode.SYSTEM
+
+    gui.initialize(display, engine)
+
+    # Disable input while engine initializes
+    await gui.disable_input()
+    await engine.initialize()
+    await gui.enable_input()
+
+    page.update()
 
 def run():
-    ctk.set_appearance_mode("System")
-    ctk.set_default_color_theme("blue")
-    root = ctk.CTk()
-    app = RedwoodUI(root)
-    root.mainloop()
-
-if __name__ == "__main__":
-    run()
+    ft.app(target=main)

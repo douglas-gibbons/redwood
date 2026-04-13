@@ -1,4 +1,5 @@
 import asyncio
+import sys
 from rich.console import Console
 from rich.markdown import Markdown
 from chat_engine.chat_engine import ChatEngine
@@ -10,25 +11,35 @@ class Display(DisplayInterface):
     def __init__(self):
         self.console = Console()
 
-    def info(self, message):
+    async def info(self, message):
         self.console.print(message)
 
-    def markdown(self, message):
+    async def markdown(self, message):
         self.console.print(Markdown(message))
 
-    def warn(self, message):
+    async def warn(self, message):
         self.console.print(f"[bold red]{message}[/bold red]")
 
-    def error(self, message):
+    async def error(self, message):
         self.console.print(f"[bold red]{message}[/bold red]")
 
     def input(self):
         return input(">> ")
 
-def run():
+    async def quit(self):
+        sys.exit(0)
+
+
+async def main():
     display = Display()
     engine = ChatEngine(display)
-    asyncio.run(engine.engine())
-
-if __name__ == "__main__":
-    run()
+    await engine.initialize()
+    
+    while True:
+        try:
+            await engine.answer_call(display.input())
+        except (KeyboardInterrupt, EOFError):
+            await engine.exit()
+    
+def run():
+    asyncio.run(main())

@@ -1,13 +1,14 @@
+from importlib.resources import contents
 import json
 import os
 from google import genai
 from rich.markdown import Markdown
 from .display_interface import DisplayInterface
 import mcp_client
-import pprint
 import logging
 from config import Config
 import sys
+import asyncio
 
 DEFAULT_CONFIG_FILE = os.path.expanduser("~/.config/redwood.yaml")
 
@@ -18,10 +19,63 @@ class ChatEngine:
 
     def __init__(self, display: DisplayInterface):
         self.display = display
-
-    def print_tools(self, tools: list):
+        logger.info("Starting redwood main")
         
-        self.display.markdown("Available Tools:")
+        # Load config file
+        self.config = Config(DEFAULT_CONFIG_FILE)
+        
+        # Gemini model name
+        self.model_name = self.config.model.name
+
+        logging.basicConfig(
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            level=self.config.logging.level,
+            filemode='a',
+            filename=self.config.logging.file
+        )
+
+        # Chat contents
+        self.contents = []
+
+        # MCP servers
+        self.mcp_servers = []
+
+        self.model_calls: int = 0
+
+
+    async def setup_api_key(self):
+        await self.display.error("API key not found in config file."
+)
+        await self.display.markdown("""
+To use Redwood, you need to provide an API key for the Gemini model in the config file.
+                                    
+You can get an API key by signing up for the Gemini API waitlist here: [aistudio.google.com/api-keys](https://aistudio.google.com/api-keys).
+
+Once you have an API key replace the "API-KEY-HERE" placeholder in the config file with your key.
+
+The config file is located at `~/.config/redwood.yaml`. You can edit it with any text editor.
+                                    
+Type "/exit" to quit.
+""")
+
+    async def initialize(self):
+
+        if not self.config.exists("model.api_key") or self.config.model.api_key == "API-KEY-HERE":
+            await self.setup_api_key()
+        else:
+            # set up connetion to Gemini and MCP servers
+            self.gclient = genai.Client(api_key=self.config.model.api_key)
+            
+            await self.display.info("Welcome to Redwood!")
+            async with asyncio.TaskGroup() as tg:
+                tg.create_task(self.print_help())
+                tg.create_task(self.register_tools())
+            await self.display.markdown(f"Using model: `{self.model_name}`")
+
+    async def print_tools(self, tools: list):
+        
+        output = ""
+        output += "# Available Tools:\n"
         tools_by_server = {}
         for tool in tools:
             server_name, tool_name = mcp_client.get_tool_name(tool.name)
@@ -30,33 +84,34 @@ class ChatEngine:
             tools_by_server[server_name].append((tool_name, tool))
         
         for server_name, server_tools in tools_by_server.items():
-            self.display.markdown(f"## Server: {server_name}")
+            output += f"## Server: {server_name}\n"
             for tool_name, tool in server_tools:
-                self.display.markdown(f"###  {tool_name}")
+                output += f"###  {tool_name}\n"
                 if tool.description:
-                    self.display.markdown(f"_{tool.description}_")
-                if tool.inputSchema:
-                    self.display.markdown(f"Args: {tool.inputSchema}")
-
-    def set_location(self, contents):
+                    output += f"{tool.description}\n"
+                # if tool.inputSchema:
+                #   output += f"Args: {tool.inputSchema}\n"
+        await self.display.markdown(output)
+                
+    async def set_location(self, contents):
         location = os.getcwd()
-        self.display.info(f"Location set to {location}")
+        await self.display.info(f"Location set to {location}")
         contents.append(genai.types.Content(role="user", parts=[genai.types.Part(text=f"Use \"{location}\" as the working directory. File operations should be relative to this directory.")]))
         contents.append(genai.types.Content(role="model", parts=[genai.types.Part(text="Understood")]))
         
-    def print_conversation(self, contents):
-        self.display.info("Conversation History:")
-        self.display.markdown(f"```{contents}```")
+    async def print_conversation(self, contents):
+        await self.display.info("Conversation History:")
+        await self.display.markdown(f"```{contents}```")
 
-    def set_initial_prompt(self, contents, config):
+    async def set_initial_prompt(self):
         # Set initial prompt
         # Gemini only has user and system prompts
-        if config.exists("prompt"):
-            contents.append(genai.types.Content(role="user", parts=[genai.types.Part(text=config.prompt)]))
-            contents.append(genai.types.Content(role="model", parts=[genai.types.Part(text="Understood")]))
+        if self.config.exists("prompt"):
+            self.contents.append(genai.types.Content(role="user", parts=[genai.types.Part(text=self.config.prompt)]))
+            self.contents.append(genai.types.Content(role="model", parts=[genai.types.Part(text="Understood")]))
 
-    def print_help(self):
-        self.display.markdown("""
+    async def print_help(self):
+        await self.display.markdown("""
 ```
 You can interact with the AI model and use various tools via MCP servers by typing these commands:                              
 
@@ -70,139 +125,143 @@ Exit:         '/exit' or '/x' to quit
 
         """)
 
-    async def engine(self):
-        logger.info("Starting redwood main")
+    async def register_tools(self):
         
-        self.display.info("Welcome to Redwood!")
-        self.print_help()
-
-        # Load config file
-        config = Config(DEFAULT_CONFIG_FILE)
-
-        if not config.exists("model.api_key"):
-            raise ValueError("API Key missing from configuration file")
-
-        logging.basicConfig(
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            level=config.logging.level,
-            filemode='a',
-            filename=config.logging.file
-        )
-
-        client = genai.Client(api_key=config.model.api_key)
-
-        mcp_servers = []
-        for server_config in config.mcp:
+        self.mcp_servers = []
+        for server_config in self.config.mcp:
             server = mcp_client.dict_to_server(server_config)
-            mcp_servers.append(server)
+            self.mcp_servers.append(server)
         
         token_storage_config = None
-        if config.exists("token_storage.enabled") and config.token_storage.enabled:
+        if self.config.exists("token_storage.enabled") and self.config.token_storage.enabled:
             token_storage_config = mcp_client.TokenStorageConfig(
-                enabled = config.token_storage.enabled,
-                location = os.path.expanduser(config.token_storage.location),
-                encryption_key = config.token_storage.encryption_key
+                enabled = self.config.token_storage.enabled,
+                location = os.path.expanduser(self.config.token_storage.location),
+                encryption_key = self.config.token_storage.encryption_key
             )
-        mcpc = mcp_client.MCPClient(servers=mcp_servers, log_file=config.logging.file, token_storage_config=token_storage_config)
+        self.mcpc = mcp_client.MCPClient(servers=self.mcp_servers, log_file=self.config.logging.file, token_storage_config=token_storage_config)
         
-        # Gemini model name
-        model_name = config.model.name
-        self.display.markdown(f"Using model: `{model_name}`")
 
-        tools = await mcpc.list_tools()
+        self.tools = await self.mcpc.list_tools()
+        await self.set_initial_prompt()
 
-        # Chat contents
-        contents = []
-
-        self.set_initial_prompt(contents, config)
-
-        gemini_config = genai.types.GenerateContentConfig(
-            tools = tools,
+        self.gemini_config = genai.types.GenerateContentConfig(
+            tools = self.tools,
             automatic_function_calling=genai.types.AutomaticFunctionCallingConfig(
                 disable=True
             ),
         )
         
-        model_calls: int = 0
-        ask_user = True
+    async def exit(self):
+        await self.display.info("Goodbye!")
+        await self.display.quit()
 
-        # logging.getLogger().handlers.clear()
-        logger.info("Entering main loop")
+    async def reset_conversation(self):
+        self.contents.clear()
+        self.model_calls = 0
+        await self.set_initial_prompt()
+        await self.display.info("Conversation history reset")
 
-        while True:
+    async def _handle_command(self, user_input: str) -> bool:
+
+        """Handles slash commands. Returns True if a command was processed."""
+        if user_input == "/exit" or user_input == "/x":
+            await self.exit()
+        elif user_input == "/tools" or user_input == "/t":
+            await self.print_tools(self.tools)
+        elif user_input == "/conversation" or user_input == "/c":
+            await self.print_conversation(self.contents)
+        elif user_input == "/locate" or user_input == "/l":
+            await self.set_location(self.contents)
+        elif user_input == "/help" or user_input == "/?":
+            await self.print_help()
+        elif user_input == "/reset" or user_input == "/r":
+            await self.reset_conversation()
+        else:
+            return False
+        return True
+
+    async def answer_call(self, user_input: str | None = None):        
+        logger.debug(f"answer_call received message: {user_input}")
+
+        if user_input is not None and user_input.startswith("/"):
+            await self._handle_command(user_input)
+            return
+
+        if user_input is not None:
+            # Append user output to contents
+            self.contents.append(genai.types.Content(role="user", parts=[genai.types.Part(text=user_input)]))
+        
+
+        # Safety valve
+        if self.model_calls >= int(self.config.max_model_calls):
+            await self.display.warn("Max model calls reached")
+            await self.display.info("This is a safety valve to catch costly looping. You can increase the limit in the config file if needed.")
+            await self.exit()        
+
+        self.model_calls += 1
+
+        # Call LLM
+        response = await self.gclient.aio.models.generate_content(
+            model = self.model_name,
+            contents = self.contents,
+            config = self.gemini_config
+        )
+
+        # Append LLM output to contents
+        self.contents.append(response.candidates[0].content)
+
+        if not response.candidates or not response.candidates[0].content or not response.candidates[0].content.parts:
+            await self.display.warn("*No content returned from model.*")
+            logger.warning(f"No content returned from model. Full response: {response}")
+            return
+
+        function_calls = []
+        texts = []
+
+        # process model response
+        for part in response.candidates[0].content.parts:
+
+            # Model wants to call a function
+            if part.function_call:
+                function_calls.append(part.function_call)
+
+            # Model returned text
+            elif part.text:
+                texts.append(part.text)
             
-            if ask_user:
+            # Who knows what the model returned? Not I.
+            else:
+                await self.display.warn("Unknown part")
 
-                sys.stdout.flush()
-                user_input = self.display.input()
-                if user_input == "/exit" or user_input == "/x":
-                    break
-                if user_input == "/tools" or user_input == "/t":
-                    self.print_tools(tools)
-                    continue
-                if user_input == "/conversation" or user_input == "/c":
-                    self.print_conversation(contents)
-                    continue
-                if user_input == "/locate" or user_input == "/l":
-                    self.set_location(contents)
-                    continue
-                if user_input == "/help" or user_input == "/?":
-                    self.print_help()
-                    continue
-                if user_input == "/reset" or user_input == "/r":
-                    contents.clear()
-                    self.set_initial_prompt(contents, config)
-                    self.display.info("Conversation history reset")
-                    continue
-                
-                # Append user output to contents
-                contents.append(genai.types.Content(role="user", parts=[genai.types.Part(text=user_input)]))
+        for text in texts:
+            await self.display.markdown(text)
+
+        if function_calls:
+            async with asyncio.TaskGroup() as tg:
+                tasks = [
+                    tg.create_task(self.call_tool(fc.name, fc.args))
+                    for fc in function_calls
+                ]
             
-            # Safety valve
-            if model_calls >= int(config.max_model_calls):
-                self.display.warn("Max model calls reached")
-                self.display.info("This is a safety valve to catch costly looping. You can increase the limit in the config file if needed.")
-                break
-            model_calls += 1
+            function_parts = []
+            for task in tasks:
+                content_resp = task.result()
+                function_parts.extend(content_resp.parts)
             
-            # Call LLM
-            response = client.models.generate_content(
-                model = model_name,
-                contents = contents,
-                config = gemini_config
-            )
+            self.contents.append(genai.types.Content(role="function", parts=function_parts))
             
-            # Append LLM output to contents
-            contents.append(response.candidates[0].content)
+            # Loop back to get the model's response to the tool outputs
+            await self.answer_call()
 
-            if not response.candidates or not response.candidates[0].content or not response.candidates[0].content.parts:
-                self.display.warn("*No content returned from model.*")
-                logger.warning(f"No content returned from model. Full response: {response}")
-                continue
-
-            # Deal with LLM output
-            for part in response.candidates[0].content.parts:
-                
-                #  LLM requested function calls
-                if part.function_call:
-                    tool_name = part.function_call.name
-                    response = await mcpc.execute_tool(tool_name, part.function_call.args)
-                    function_response_part = genai.types.Part.from_function_response(
-                        name = tool_name,
-                        response=response
-                    )
-                    resp = genai.types.Content(role="function", parts=[function_response_part])
-                    contents.append(resp)
-                    ask_user = False
-
-                # LLM Text output
-                elif part.text:
-                    self.display.markdown(part.text)
-                    ask_user = True
-                else:
-                    self.display.warn("Unknown part")
-                    s = json.dumps(response, indent=2)
-                    self.display.markdown(f"```{s}```")
-                    break
-                
-        logger.info(f"chat contents: {contents}")
+    async def call_tool(self, tool_name: str, args: dict) -> genai.types.Content:
+        await self.display.tool_log(f"Calling tool {tool_name} with args {args}")
+        response = await self.mcpc.execute_tool(tool_name, args)
+        await self.display.tool_log(f"Tool response: {response}")
+        
+        function_response_part = genai.types.Part.from_function_response(
+            name = tool_name,
+            response=response
+        )
+        resp = genai.types.Content(role="function", parts=[function_response_part])
+        return resp
