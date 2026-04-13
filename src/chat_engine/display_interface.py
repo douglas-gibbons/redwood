@@ -21,3 +21,7 @@ class DisplayInterface(ABC):
     @abstractmethod
     async def quit(self):
         raise NotImplementedError
+
+    async def tool_log(self, message: str):
+        return False
+    

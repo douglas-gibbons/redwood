@@ -125,7 +125,6 @@ Exit:         '/exit' or '/x' to quit
 
         """)
 
-        
     async def register_tools(self):
         
         self.mcp_servers = []
@@ -222,13 +221,7 @@ Exit:         '/exit' or '/x' to quit
 
             # Model wants to call a function
             if part.function_call:
-                tool_name = part.function_call.name
-                response = await self.mcpc.execute_tool(tool_name, part.function_call.args)
-                function_response_part = genai.types.Part.from_function_response(
-                    name = tool_name,
-                    response=response
-                )
-                resp = genai.types.Content(role="function", parts=[function_response_part])
+                resp = await self.call_tool(part.function_call.name, part.function_call.args)
                 self.contents.append(resp)
                 # Loop back to get the model's response to the tool output
                 await self.answer_call()
@@ -242,3 +235,15 @@ Exit:         '/exit' or '/x' to quit
             else:
                 await self.display.warn("Unknown part")
                 break
+
+    async def call_tool(self, tool_name: str, args: dict) -> genai.types.Content:
+        await self.display.tool_log(f"Calling tool {tool_name} with args {args}")
+        response = await self.mcpc.execute_tool(tool_name, args)
+        await self.display.tool_log(f"Tool response: {response}")
+        
+        function_response_part = genai.types.Part.from_function_response(
+            name = tool_name,
+            response=response
+        )
+        resp = genai.types.Content(role="function", parts=[function_response_part])
+        return resp

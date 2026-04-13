@@ -15,6 +15,7 @@ class GUI:
         self.page.title = "Redwood"
         self.message_field = None
         self.chat = None
+        self.tool_logs = None
         self.send_button = None
         self.engine = None
         self.display = None
@@ -38,13 +39,22 @@ class GUI:
         # Use ListView for better scrolling behavior. 
         # reverse=True anchors the list to the bottom, bypassing the Flet 0.84 scroll defect.
         self.chat = ft.ListView(expand=True, spacing=3, auto_scroll=False, reverse=True)
+        self.tool_logs = ft.ListView(expand=True, spacing=3, auto_scroll=False, reverse=True)
+        
         self.send_button = ft.ElevatedButton(
             "Send",
             on_click=self.send_button_click,
         )
         self.progress_ring = ft.ProgressRing(width=24, height=24, visible=False)
+        
+        main_area = ft.Row([
+            ft.Container(content=self.chat, expand=3),
+            ft.VerticalDivider(width=1, color=ft.Colors.OUTLINE_VARIANT),
+            ft.Container(content=self.tool_logs, expand=1)
+        ], expand=True)
+
         self.page.add(
-            self.chat,
+            main_area,
             ft.Row([self.message_field, self.progress_ring, self.send_button]),
         )
 
@@ -112,9 +122,9 @@ class GUI:
             padding = ft.padding.only(right=80, top=5, bottom=5)
             text_color = ft.Colors.ON_ERROR_CONTAINER
         else:
-            bgcolor = ft.Colors.SURFACE_VARIANT
+            bgcolor = ft.Colors.PRIMARY_CONTAINER
             padding = ft.padding.only(right=80, top=5, bottom=5)
-            text_color = ft.Colors.ON_SURFACE_VARIANT
+            text_color = ft.Colors.ON_PRIMARY_CONTAINER
 
         # Render message content
         if is_markdown:
@@ -166,6 +176,22 @@ class GUI:
         self.chat.controls.insert(0, wrapper)
         self.page.update()
 
+    async def append_to_tool_log(self, message: str):
+        """Update the UI with new tool log messages."""
+        text_color = ft.Colors.ON_SECONDARY_CONTAINER
+        
+        content = ft.Text(f"{message}", size=12, color=text_color, font_family="monospace")
+        
+        bubble = ft.Container(
+            content=content,
+            bgcolor=ft.Colors.SECONDARY_CONTAINER,
+            border_radius=ft.border_radius.all(4),
+            padding=8,
+        )
+        
+        self.tool_logs.controls.insert(0, bubble)
+        self.page.update()
+
 
 class Display(DisplayInterface):
 
@@ -188,6 +214,9 @@ class Display(DisplayInterface):
     async def markdown(self, prompt):
         await self.gui.append_to_chat("Redwood", prompt, is_markdown=True)
         return prompt
+    
+    async def tool_log(self, message: str):
+        await self.gui.append_to_tool_log(message)
 
 async def main(page: ft.Page):
 
