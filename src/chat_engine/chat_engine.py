@@ -216,25 +216,43 @@ Exit:         '/exit' or '/x' to quit
             logger.warning(f"No content returned from model. Full response: {response}")
             return
 
+        function_calls = []
+        texts = []
+
         # process model response
         for part in response.candidates[0].content.parts:
 
             # Model wants to call a function
             if part.function_call:
-                resp = await self.call_tool(part.function_call.name, part.function_call.args)
-                self.contents.append(resp)
-                # Loop back to get the model's response to the tool output
-                await self.answer_call()
-                return
+                function_calls.append(part.function_call)
 
             # Model returned text
             elif part.text:
-                await self.display.markdown(part.text)
+                texts.append(part.text)
             
             # Who knows what the model returned? Not I.
             else:
                 await self.display.warn("Unknown part")
-                break
+
+        for text in texts:
+            await self.display.markdown(text)
+
+        if function_calls:
+            async with asyncio.TaskGroup() as tg:
+                tasks = [
+                    tg.create_task(self.call_tool(fc.name, fc.args))
+                    for fc in function_calls
+                ]
+            
+            function_parts = []
+            for task in tasks:
+                content_resp = task.result()
+                function_parts.extend(content_resp.parts)
+            
+            self.contents.append(genai.types.Content(role="function", parts=function_parts))
+            
+            # Loop back to get the model's response to the tool outputs
+            await self.answer_call()
 
     async def call_tool(self, tool_name: str, args: dict) -> genai.types.Content:
         await self.display.tool_log(f"Calling tool {tool_name} with args {args}")
