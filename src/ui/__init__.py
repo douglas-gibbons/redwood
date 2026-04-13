@@ -47,16 +47,18 @@ class GUI:
         )
         self.progress_ring = ft.ProgressRing(width=24, height=24, visible=False)
         
+        chat_column = ft.Column([
+            self.chat,
+            ft.Row([self.message_field, self.progress_ring, self.send_button])
+        ], expand=True)
+
         main_area = ft.Row([
-            ft.Container(content=self.chat, expand=3),
+            ft.Container(content=chat_column, expand=3),
             ft.VerticalDivider(width=1, color=ft.Colors.OUTLINE_VARIANT),
             ft.Container(content=self.tool_logs, expand=1)
         ], expand=True)
 
-        self.page.add(
-            main_area,
-            ft.Row([self.message_field, self.progress_ring, self.send_button]),
-        )
+        self.page.add(main_area)
 
     async def disable_input(self):
         self._processing = True
