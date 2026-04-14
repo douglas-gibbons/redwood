@@ -133,8 +133,9 @@ class GUI:
             # Markdown inherits default theme text colors, which generally adapt well.
             content = ft.Markdown(
                 message, 
-                selectable=True, 
-                extension_set=ft.MarkdownExtensionSet.GITHUB_WEB
+                selectable=True,
+                extension_set=ft.MarkdownExtensionSet.GITHUB_WEB,
+                auto_follow_links=True
             )
         else:
             content = ft.Text(f"{message}", color=text_color)
