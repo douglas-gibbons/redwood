@@ -138,7 +138,7 @@ class GUI:
                 auto_follow_links=True
             )
         else:
-            content = ft.Text(f"{message}", color=text_color)
+            content = ft.Text(f"{message}", color=text_color, selectable=True)
 
         icon_name = None
         if is_user:
