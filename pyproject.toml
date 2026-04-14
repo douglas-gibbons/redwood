@@ -30,3 +30,6 @@ ui = "ui:run"
 server = "server:run"
 agent = "agent:run"
 image_generator = "image_generator:run"
+
+[tool.flet.app]
+path = "src"

@@ -120,6 +120,16 @@ Run
 npx @modelcontextprotocol/inspector make server
 ```
 
+### Packaging
+
+On Debian/Ubuntu
+
+```
+sudo apt-get install clang cmake ninja-build pkg-config libgtk-3-dev lld
+flet build linux
+```
+
+
 # Contributing
 
 Contributions are welcome!

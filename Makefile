@@ -21,3 +21,7 @@ ui:                ## run the ui
 .PHONY: server
 server:            ## run the server. You can also run server.sh
 	uv run server
+
+.PHONY: package
+package:           ## build the package.
+	flet build linux
