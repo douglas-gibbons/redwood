@@ -32,9 +32,15 @@ If that's not enough, it's written in Python, and is super simple to modify, sho
 
 2. Run the CLI:
 
-   ```bash
-   uvx --from git+https://github.com/douglas-gibbons/redwood cli
-   ```
+```bash
+uvx --from git+https://github.com/douglas-gibbons/redwood cli
+```
+
+... or run the GUI:
+
+```bash
+uvx --from git+https://github.com/douglas-gibbons/redwood ui
+```
 
 The first time you run it, it will create a configuration file at `~/.config/redwood.yaml` . Edit this file to add your [Gemini API key](https://ai.google.dev/gemini-api/docs/api-key), configure MCP servers, and maybe tweak the prompt for your needs.
 
