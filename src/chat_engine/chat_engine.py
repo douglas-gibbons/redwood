@@ -255,9 +255,42 @@ Exit:         '/exit' or '/x' to quit
             await self.answer_call()
 
     async def call_tool(self, tool_name: str, args: dict) -> genai.types.Content:
-        await self.display.tool_log(f"Calling tool {tool_name} with args {args}")
+        # Format the arguments for better readability
+        try:
+            if hasattr(args, "model_dump"):
+                formatted_args = json.dumps(args.model_dump(), indent=2)
+            elif type(args) is dict:
+                formatted_args = json.dumps(args, indent=2)
+            else:
+                formatted_args = json.dumps(dict(args), indent=2)
+        except Exception:
+            formatted_args = str(args)
+            
+        await self.display.tool_log(f"**Call:** `{tool_name}`\n```json\n{formatted_args}\n```")
+        
         response = await self.mcpc.execute_tool(tool_name, args)
-        await self.display.tool_log(f"Tool response: {response}")
+        
+        # Format the response for better readability
+        try:
+            if hasattr(response, "model_dump"):
+                formatted_response = json.dumps(response.model_dump(), indent=2)
+            elif hasattr(response, "__dict__"):
+                formatted_response = json.dumps(response.__dict__, indent=2, default=str)
+            elif isinstance(response, dict) and "result" in response and len(response) == 1:
+                formatted_response = str(response["result"])
+            else:
+                formatted_response = json.dumps(response, indent=2)
+        except Exception:
+            formatted_response = str(response)
+            
+        # Truncate response if it's too long
+        if len(formatted_response) > 2000:
+            formatted_response = formatted_response[:2000] + "\n... [truncated]"
+            
+        if isinstance(response, dict) and "result" in response and len(response) == 1:
+            await self.display.tool_log(f"**Result:**\n```\n{formatted_response}\n```")
+        else:
+            await self.display.tool_log(f"**Result:**\n```json\n{formatted_response}\n```")
         
         function_response_part = genai.types.Part.from_function_response(
             name = tool_name,

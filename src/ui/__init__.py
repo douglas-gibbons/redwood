@@ -183,7 +183,11 @@ class GUI:
         """Update the UI with new tool log messages."""
         text_color = ft.Colors.ON_SECONDARY_CONTAINER
         
-        content = ft.Text(f"{message}", size=12, color=text_color, font_family="monospace")
+        content = ft.Markdown(
+            message,
+            selectable=True,
+            extension_set=ft.MarkdownExtensionSet.GITHUB_WEB
+        )
         
         bubble = ft.Container(
             content=content,
