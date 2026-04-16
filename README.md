@@ -22,25 +22,41 @@ tools to offer the model; leaving it entirely up to the user.
 
 If that's not enough, it's written in Python, and is super simple to modify, should you want to.
 
+### The GUI
+
+The [Flet ](https://flet.dev/) GUI runs locally, so has access to everything on the user's system (if you let it). There's a pane to output interactions with MPC tools so you have something to look at while it's busy.
+
+<p align="center">
+  <img src="gui-screenshot.png" alt="Redwood Screenshot" width="60%">
+</p>
+
+### The CLI
+
+For a more traditional look, there's always the CLI.
+
 <p align="center">
   <img src="screenshot.png" alt="Redwood Screenshot" width="60%">
 </p>
 
-## Quick Start for the CLI app
+
+
+## Quick Start
 
 1. Install uv (`brew install uv`)
 
-2. Run the CLI:
+2. Run the GUI:
+
+```bash
+uvx --from git+https://github.com/douglas-gibbons/redwood ui
+```
+
+
+...or the CLI:
 
 ```bash
 uvx --from git+https://github.com/douglas-gibbons/redwood cli
 ```
 
-... or run the GUI:
-
-```bash
-uvx --from git+https://github.com/douglas-gibbons/redwood ui
-```
 
 The first time you run it, it will create a configuration file at `~/.config/redwood.yaml` . Edit this file to add your [Gemini API key](https://ai.google.dev/gemini-api/docs/api-key), configure MCP servers, and maybe tweak the prompt for your needs.
 
@@ -52,7 +68,7 @@ An image generation MCP server is included, and configured in the default config
 
 ### Agent
 
-An MCP agent is included. It's not overly useful, yet.
+An MCP agent is included. It could be prompted so that work can be managed in parallel.
 
 ### General tools
 
