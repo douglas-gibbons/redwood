@@ -1,172 +1,122 @@
-# Redwood
+# 🌲 Redwood
 
-Redwood is a CLI client for Gemini.
+**Redwood** is a powerful, highly-configurable CLI and GUI client for Google's Gemini models, built with a focus on transparency and user control. It integrates deeply with the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) to extend its capabilities with custom tools and data sources.
 
-There's also an MCP server with basic tools to help with tasks such as telling the time, running local commands and storing data.
+---
 
-Features
+## ✨ Features
 
-* terminal based interface
-* able to use MCP tools
-* image generation
-* skills reader
-* full control of the prompt through configuration
-
-## Motivation
-
-As AI tools get more advanced, they tend to hide away more of the configuration.  Great for end users, but a little annoying if you
-want more control.
-
-This tool is pretty raw. It gives full control of the prompt in the one configuration file and makes no assumptions about what
-tools to offer the model; leaving it entirely up to the user.
-
-If that's not enough, it's written in Python, and is super simple to modify, should you want to.
-
-### The GUI
-
-The [Flet ](https://flet.dev/) GUI runs locally, so has access to everything on the user's system (if you let it). There's a pane to output interactions with MPC tools so you have something to look at while it's busy.
+- 🖥️ **Dual Interface**: Choice between a sleek [Flet](https://flet.dev/) GUI and a traditional terminal CLI.
 
 <p align="center">
-  <img src="gui-screenshot.png" alt="Redwood Screenshot" width="60%">
+  <img src="gui-screenshot.png" alt="Redwood GUI" width="60%">
+  <br>
+  <em>The Redwood GUI</em>
 </p>
-
-### The CLI
-
-For a more traditional look, there's always the CLI.
 
 <p align="center">
-  <img src="screenshot.png" alt="Redwood Screenshot" width="60%">
+  <img src="screenshot.png" alt="Redwood CLI" width="60%">
+  <br>
+  <em>The Redwood CLI</em>
 </p>
 
+- 🛠️ **MCP Native**: Seamlessly use MCP tools for tasks like web scraping, file management, and more.
+- 🎨 **Image Generation**: Built-in support for image generation models via MCP.
+- 🧠 **Full Prompt Control**: Complete control over the system prompt via a single configuration file.
+- 📝 **Skills Integration**: Ability to read and utilize specialized [agent skills](https://agentskills.io/).
+- 🗄️ **Persistent Storage**: Integrated database for storing user-defined data and lists.
 
+---
 
-## Quick Start
+## 🚀 Quick Start
 
-1. Install uv (`brew install uv`)
+### 1. Prerequisites
+Ensure you have `uv` installed:
+```bash
+brew install uv
+```
 
-2. Run the GUI:
+### 2. Launching Redwood
+You can run Redwood directly without cloning the repository:
 
+**Run the GUI:**
 ```bash
 uvx --from git+https://github.com/douglas-gibbons/redwood ui
 ```
 
-
-...or the CLI:
-
+**Run the CLI:**
 ```bash
 uvx --from git+https://github.com/douglas-gibbons/redwood cli
 ```
 
+### 3. Configuration
+On the first run, Redwood creates a configuration file at `~/.config/redwood.yaml`. 
 
-The first time you run it, it will create a configuration file at `~/.config/redwood.yaml` . Edit this file to add your [Gemini API key](https://ai.google.dev/gemini-api/docs/api-key), configure MCP servers, and maybe tweak the prompt for your needs.
+To get started:
+1. Obtain a [Gemini API Key](https://ai.google.dev/gemini-api/docs/api-key).
+2. Open `~/.config/redwood.yaml` and add your key:
+   ```yaml
+   model:
+     name: gemini-2.0-flash-exp
+     api_key: YOUR_API_KEY_HERE
+   ```
+3. Configure your preferred MCP servers and customize the system prompt.
 
-## Tools
+---
 
-### Image Generation
+## 🛠️ Included Tools
 
-An image generation MCP server is included, and configured in the default configuration file. It will save files to a local directory.
+Redwood comes bundled with several core MCP capabilities:
 
-### Agent
+*   **Image Generation**: Saves generated images to a local directory for easy access.
+*   **Agent**: A sub-agent tool allowing for parallel task management.
+*   **General Utilities**:
+    *   **Time**: Provides current date and time context.
+    *   **Shell**: Securely run local commands.
+    *   **Web Scraper**: Extract content from the web.
+    *   **Skills Reader**: Loads markdown-based skills for specific workflows.
+*   **Database**: A simple key-value store. You can prompt the model to use this for persistent lists (e.g., "Add milk to my shopping list").
 
-An MCP agent is included. It could be prompted so that work can be managed in parallel.
+---
 
-### General tools
+## 💡 Pro Tips
 
-These include:
+### Set Working Directory
+The model doesn't automatically know your current directory. Use the `/location` command in the CLI to set your working directory. This injects the current path into the prompt, enabling relative file operations.
 
-* time tools, so the agent knows what the date and time is
-* command line runner, so it can run commands
-* a web scraper
-* skills reader, so the agent can read and use [skills](https://agentskills.io/home).
+### Visualizing Tools
+The GUI features a dedicated pane to monitor MCP tool interactions in real-time, providing transparency into the agent's thought process.
 
-### Database
+---
 
-There's a simple database as part of the main MCP server, for storing data. You can feed your model prompts to use this for _something_.
-
-For example, you can add this to your prompt to use lists:
-
-```
-  # Lists
-  Use the redwood database tool to store lists. The "category" would be the name of the list, 
-  and the "content" would be the value. For example, shopping lists and TODO lists.
-```
-
-## CLI Tips
-
-The model doesn't know what directory you started the application in, but you can set it using `/location`. This adds `Use "{location}" as the working directory. File operations should be relative to this directory`  to the prompt, where `{location}` is set to the directory the application was started in.
-
-This is not set by default, so that you have total control over how you want to prompt the model.
-
-## Development
+## 🛠️ Development
 
 ### Requirements
+- Python with `uv` (`brew install uv`)
+- `make` (`brew install make`)
 
-This python app requires:
-
-- uv (`brew install uv`)
-- make (`brew install make`)
-
-Check out the code somewhere with:
-
-`git clone https://github.com/douglas-gibbons/redwood.git`
-
-or
-
-`git clone git@github.com:douglas-gibbons/redwood.git`
-
-
-### Running the CLI
-
-Run this command on a terminal from where you have the code checked out:
-
+### Local Setup
 ```bash
-make cli
+git clone https://github.com/douglas-gibbons/redwood.git
+cd redwood
 ```
 
-### Running the MCP server
+### Useful Commands
+- **Run CLI**: `make cli`
+- **Run Server**: `make server`
+- **Run Tests**: `make test`
+- **Inspect MCP**: `npx @modelcontextprotocol/inspector make server`
 
-Run `make server` to start the MCP server.
+---
 
+## 🤝 Contributing
 
-### Testing with inspector
+Contributions are welcome! Please feel free to submit a Pull Request or open an issue.
 
-Run
+1. Fork the repository.
+2. Create your feature branch (`git checkout -b feature/amazing-feature`).
+3. Commit your changes (`git commit -m 'Add some amazing feature'`).
+4. Open a Pull Request.
 
-```
-npx @modelcontextprotocol/inspector make server
-```
-
-### Packaging
-
-On Debian/Ubuntu
-
-```
-sudo apt-get install clang cmake ninja-build pkg-config libgtk-3-dev lld
-flet build linux
-```
-
-
-# Contributing
-
-Contributions are welcome!
-
-## Reporting Issues
-
-If you find a bug or have a feature request, please open an issue in the repository. Provide as much detail as possible to help us understand and resolve the issue.
-
-## Pull Requests
-
-Please follow these steps to contribute code:
-
-1.  Fork the repository
-2.  Create a feature branch (`git checkout -b feature/amazing-feature`)
-3.  Commit your changes (`git commit -m 'Add some amazing feature'`)
-4.  Run the tests to ensure everything is working:
-
-    ```bash
-    make test
-    ```
-
-5.  Push to the branch (`git push origin feature/amazing-feature`)
-6.  Open a Pull Request
-
+---
+*Created by Douglas Gibbons*
