@@ -120,3 +120,6 @@ Contributions are welcome! Please feel free to submit a Pull Request or open an 
 
 ---
 *Created by Douglas Gibbons*
+
+---
+*Disclaimer: This is not an official Google project. It is an open-source project maintained by Douglas Gibbons.*
