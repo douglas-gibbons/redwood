@@ -8,10 +8,8 @@ from key_value.aio.wrappers.encryption import FernetEncryptionWrapper
 from cryptography.fernet import Fernet
 from pathlib import Path
 import logging
-import re
 import asyncio
-from pydantic import BaseModel, Field, RootModel
-from typing import Dict, Any, List
+from .sanitize import sanitize_name, sanitize_tools
 
 
 logging.getLogger().handlers.clear()
@@ -53,18 +51,6 @@ async def log_handler(message: LogMessage):
     # Log the message using the standard logging library
     logger.log(level, msg, extra=extra)
 
-class ToolSchema(BaseModel):
-    """Sanitizes the JSON Schema for tool arguments."""
-    type: str = "object"
-    properties: Dict[str, Any] = Field(default_factory=dict)
-    required: List[str] = Field(default_factory=list)
-
-class MCPTool(BaseModel):
-    """The sanitized version of an MCP tool."""
-    model_config = {"from_attributes": True}
-    name: str
-    description: str | None = "No description provided."
-    inputSchema: ToolSchema  # This forces the nested validation
 
 class Server:
     def __init__(self, name, ask, command, args, env, url, headers):
@@ -106,7 +92,7 @@ class MCPClient:
         # Set up other servers
         for server in self.servers:
             
-            clean_name = self._sanitize_name(server.name)
+            clean_name = sanitize_name(server.name)
             
             # STDIO Transport
             if server.command is not None:
@@ -163,26 +149,13 @@ class MCPClient:
                 logger.error(f"Error listing tools for client {name} after reconnect: {retry_e}")
                 return []
 
-    def _sanitize_name(self, name):
-        return re.sub(r"[^a-zA-Z0-9]", "", name)
-
-    def _sanitize_tools(self, tools):
-        sanitized_tools = []
-        for tool in tools:
-            try:
-                clean_tool = MCPTool.model_validate(tool)
-                sanitized_tools.append(clean_tool)
-            except Exception as e:
-                logger.error(f"Error sanitizing tool {tool.name}: {e}")
-        return sanitized_tools
-
     async def list_tools(self):
         all_tools = []
         tasks = [self._list_tools_for_client(name, client) for name, client in self.clients.items()]
         results = await asyncio.gather(*tasks)
         for tools in results:
             all_tools.extend(tools)
-        all_tools = self._sanitize_tools(all_tools)
+        all_tools = sanitize_tools(all_tools)
         logger.debug(f"All tools: {all_tools}")
         return all_tools
 
@@ -216,7 +189,7 @@ class MCPClient:
     def can_execute_tool(self, server_name, tool_name, args):
         
         for server in self.servers:
-            if self._sanitize_name(server.name) == server_name:
+            if sanitize_name(server.name) == server_name:
                 if server.ask is None or server.ask == True:
                     print("\033[92mExecute tool", server_name, tool_name, "with args", args, "?\033[91m (Y/n)\033[0m")
                     user_input = input(">> ")
