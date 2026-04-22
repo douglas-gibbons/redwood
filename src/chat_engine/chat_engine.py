@@ -139,9 +139,13 @@ Exit:         '/exit' or '/x' to quit
                 location = os.path.expanduser(self.config.token_storage.location),
                 encryption_key = self.config.token_storage.encryption_key
             )
-        self.mcpc = mcp_client.MCPClient(servers=self.mcp_servers, log_file=self.config.logging.file, token_storage_config=token_storage_config)
+        self.mcpc = mcp_client.MCPClient(
+            display=self.display,
+            servers=self.mcp_servers, 
+            log_file=self.config.logging.file, 
+            token_storage_config=token_storage_config
+        )
         
-
         self.tools = await self.mcpc.list_tools()
         await self.set_initial_prompt()
 

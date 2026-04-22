@@ -9,6 +9,8 @@ from cryptography.fernet import Fernet
 from pathlib import Path
 import logging
 import asyncio
+
+from chat_engine.chat_engine import DisplayInterface
 from .sanitize import sanitize_name, sanitize_tools
 
 
@@ -74,12 +76,13 @@ class TokenStorageConfig:
 
 class MCPClient:
     
-    def __init__(self, servers: list[Server], log_file: str | Path | None = None, token_storage_config: TokenStorageConfig | None = None):
+    def __init__(self, display: DisplayInterface, servers: list[Server], log_file: str | Path | None = None, token_storage_config: TokenStorageConfig | None = None):
 
         self.servers = servers
         self.log_file = Path(log_file) if log_file else None
         self.clients = {}
         self.token_storage_config = token_storage_config
+        self.display = display
 
         # Set up token storage if enabled
         encrypted_storage = None
@@ -119,16 +122,15 @@ class MCPClient:
             else:
                 logger.error("Server " + server.name + " has no valid transport configuration")
 
-
+        
     async def _list_tools_for_client(self, name, client):
         logger.debug("Listing tools for client " + name)
+        tools = []
         try:
             async with client:
                 tools = await client.list_tools()
                 for tool in tools:
                     tool.name = name + "_" + tool.name
-            # logger.debug(f"Tools for client {name} after reconnect: {tools}")
-            return tools
         except Exception as e:
             console = Console()
             console.print(f"[bold yellow]Error listing tools for client {name}: {e}. Attempting reconnect...[/bold yellow]")
@@ -143,11 +145,14 @@ class MCPClient:
                     for tool in tools:
                         tool.name = name + "_" + tool.name
                 
-                return tools
             except Exception as retry_e:
                 console.print(f"[bold red]Error listing tools for client {name} after reconnect: {retry_e}[/bold red]")
                 logger.error(f"Error listing tools for client {name} after reconnect: {retry_e}")
-                return []
+            
+        tools = sanitize_tools(tools)
+        return tools
+
+    
 
     async def list_tools(self):
         all_tools = []
@@ -155,7 +160,6 @@ class MCPClient:
         results = await asyncio.gather(*tasks)
         for tools in results:
             all_tools.extend(tools)
-        all_tools = sanitize_tools(all_tools)
         logger.debug(f"All tools: {all_tools}")
         return all_tools
 
@@ -165,7 +169,7 @@ class MCPClient:
             logger.error("Invalid tool name: " + full_tool_name)
             return toolResponse("error", "Invalid tool name: " + full_tool_name)
 
-        if self.can_execute_tool(server_name, tool_name, args):
+        if await self.can_execute_tool(server_name, tool_name, args):
             client = self.clients[server_name]
             async with client:
                 logger.debug("Executing tool " + full_tool_name + " with args " + str(args))
@@ -186,17 +190,15 @@ class MCPClient:
             logger.debug("User denied execution of tool " + full_tool_name)
             return toolResponse("error", "User denied execution of tool " + full_tool_name)
 
-    def can_execute_tool(self, server_name, tool_name, args):
+    async def can_execute_tool(self, server_name, tool_name, args):
         
         for server in self.servers:
             if sanitize_name(server.name) == server_name:
                 if server.ask is None or server.ask == True:
-                    print("\033[92mExecute tool", server_name, tool_name, "with args", args, "?\033[91m (Y/n)\033[0m")
-                    user_input = input(">> ")
-                    if user_input.lower() == "y" or user_input.lower() == "yes" or user_input == "":
-                        return True
-                    else:
-                        return False
+                    question = f"Execute tool {server_name} {tool_name} with args {args}?"
+                    return await self.display.ask_yes_no(question)
                 else:
                     return True
+        # server not found
+        logger.error("Server " + server_name + " not found")
         return False

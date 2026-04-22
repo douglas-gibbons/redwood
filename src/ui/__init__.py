@@ -225,6 +225,31 @@ class Display(DisplayInterface):
     async def tool_log(self, message: str):
         await self.gui.append_to_tool_log(message)
 
+    async def ask_yes_no(self, question: str) -> bool:
+        future = asyncio.Future()
+
+        async def on_yes(e):
+            self.gui.page.pop_dialog()
+            future.set_result(True)
+
+        async def on_no(e):
+            self.gui.page.pop_dialog()
+            future.set_result(False)
+
+        dlg = ft.AlertDialog(
+            title=ft.Text("Execution Confirmation"),
+            content=ft.Text(question),
+            actions=[
+                ft.TextButton("Yes", on_click=on_yes),
+                ft.TextButton("No", on_click=on_no),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+            modal=True
+        )
+
+        self.gui.page.show_dialog(dlg)
+        return await future
+
 async def main(page: ft.Page):
 
     gui = GUI(page)

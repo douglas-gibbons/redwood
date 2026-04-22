@@ -26,6 +26,13 @@ class Display(DisplayInterface):
     def input(self):
         return input(">> ")
 
+    async def ask_yes_no(self, question: str) -> bool:
+        self.console.print(f"[bold green]{question}[/bold green] [bold red](Y/n)[/bold red]")
+        user_input = input(">> ")
+        if user_input.lower() == "y" or user_input.lower() == "yes" or user_input == "":
+            return True
+        return False
+
     async def quit(self):
         sys.exit(0)
 

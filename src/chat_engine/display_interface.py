@@ -22,6 +22,10 @@ class DisplayInterface(ABC):
     async def quit(self):
         raise NotImplementedError
 
+    @abstractmethod
+    async def ask_yes_no(self, question: str) -> bool:
+        raise NotImplementedError
+
     async def tool_log(self, message: str):
         return False
     
