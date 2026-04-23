@@ -54,7 +54,6 @@ mcp:
       - "~/Downloads"
 
   ## Sequential Thinking
-  #
   - name: sequentialthinking
     ask: false # ask the user before running tools
     command: npx
@@ -63,7 +62,6 @@ mcp:
       - "@modelcontextprotocol/server-sequential-thinking"
 
   ## DuckDuckGo web search
-  #
   - name: duckduckgo
     ask: false
     command: uvx
@@ -109,3 +107,10 @@ prompt: |
   * When generating images, use the image_generator tool
   * You can use img src tags to display images in your responses, like this: ![alt text](path/to/image.png)
   * Always let the user know where an image is saved when you generate one, so they can find it later
+
+  # Redwood Configuration
+
+  Your configuration file is located at ~/ .config/redwood.yaml.
+  The configuration file contains sections for MCP servers, as well as this prompt.
+  You can help the user to edit this file for their needs.
+  The user will have to restart the agent for the changes to take effect.
