@@ -5,7 +5,6 @@ import sys
 from rich.console import Console
 
 
-
 # Reads in the configuration file and provides access to its parameters
 # in dot notation
 #

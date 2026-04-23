@@ -238,7 +238,7 @@ class Display(DisplayInterface):
 
         dlg = ft.AlertDialog(
             title=ft.Text("Execution Confirmation"),
-            content=ft.Text(question),
+            content=ft.Markdown(question, extension_set=ft.MarkdownExtensionSet.GITHUB_WEB, auto_follow_links=True),
             actions=[
                 ft.TextButton("Yes", on_click=on_yes),
                 ft.TextButton("No", on_click=on_no),
@@ -262,7 +262,7 @@ class Display(DisplayInterface):
         text_field.on_submit = on_submit
 
         dlg = ft.AlertDialog(
-            title=ft.Text(question),
+            title=ft.Markdown(question, extension_set=ft.MarkdownExtensionSet.GITHUB_WEB, auto_follow_links=True),
             content=text_field,
             actions=[
                 ft.TextButton("Submit", on_click=on_submit),

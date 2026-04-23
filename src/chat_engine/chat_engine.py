@@ -48,14 +48,18 @@ class ChatEngine:
         await self.display.markdown("""
 To use Redwood, you need to provide an API key for the Gemini model.
                                     
-You can get an API key by signing up for the Gemini API waitlist here: [aistudio.google.com/api-keys](https://aistudio.google.com/api-keys).
+You can get an API key at [aistudio.google.com/api-keys](https://aistudio.google.com/api-keys).
 """)
-        api_key = await self.display.ask_question("Please enter your Gemini API key:")
+        api_key = await self.display.ask_question("Please enter a Gemini API key. You can get create new API key at [aistudio.google.com/api-keys](https://aistudio.google.com/api-keys)")
         if not api_key:
             await self.display.error("No API key provided.")
             await self.exit()
             return
-            
+        else:
+            await self.display.info("""The API key has been added to the config file at ~/.config/redwood.yaml.
+The agent knows how to edit this file for you. If you want to change something, like prevent 
+prompts every time a tool is called, or add an MCP server, just ask the agent.""")
+
         with open(DEFAULT_CONFIG_FILE, "r") as f:
             content = f.read()
             
