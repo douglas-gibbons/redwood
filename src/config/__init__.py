@@ -62,5 +62,4 @@ class Config:
         
         console = Console()
         console.print("[bold yellow]No configuration file found.[/bold yellow]")
-        console.print(f"I created an example config file at {config_file}. Please edit it with your settings and restart the application.")
-        sys.exit(0)
+        console.print(f"I created an example config file at {config_file}.")

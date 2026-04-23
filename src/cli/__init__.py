@@ -33,6 +33,10 @@ class Display(DisplayInterface):
             return True
         return False
 
+    async def ask_question(self, question: str) -> str:
+        self.console.print(f"[bold green]{question}[/bold green]")
+        return input(">> ")
+
     async def quit(self):
         sys.exit(0)
 

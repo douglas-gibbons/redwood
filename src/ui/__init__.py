@@ -250,6 +250,40 @@ class Display(DisplayInterface):
         self.gui.page.show_dialog(dlg)
         return await future
 
+    async def ask_question(self, question: str) -> str:
+        future = asyncio.Future()
+
+        text_field = ft.TextField(label="Answer", autofocus=True)
+
+        async def on_submit(e):
+            self.gui.page.pop_dialog()
+            future.set_result(text_field.value)
+            
+        text_field.on_submit = on_submit
+
+        dlg = ft.AlertDialog(
+            title=ft.Text(question),
+            content=text_field,
+            actions=[
+                ft.TextButton("Submit", on_click=on_submit),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+            modal=True
+        )
+
+        self.gui.page.show_dialog(dlg)
+        
+        async def _focus_field():
+            await asyncio.sleep(0.1)
+            try:
+                await text_field.focus()
+            except:
+                pass
+                
+        # Flet 0.84 workaround: focus text field explicitly if autofocus is not enough
+        self.gui.page.run_task(_focus_field)
+        return await future
+
 async def main(page: ft.Page):
 
     gui = GUI(page)

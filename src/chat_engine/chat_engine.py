@@ -44,33 +44,47 @@ class ChatEngine:
 
 
     async def setup_api_key(self):
-        await self.display.error("API key not found in config file."
-)
+        await self.display.error("API key not found in config file.")
         await self.display.markdown("""
-To use Redwood, you need to provide an API key for the Gemini model in the config file.
+To use Redwood, you need to provide an API key for the Gemini model.
                                     
 You can get an API key by signing up for the Gemini API waitlist here: [aistudio.google.com/api-keys](https://aistudio.google.com/api-keys).
-
-Once you have an API key replace the "API-KEY-HERE" placeholder in the config file with your key.
-
-The config file is located at `~/.config/redwood.yaml`. You can edit it with any text editor.
-                                    
-Type "/exit" to quit.
 """)
+        api_key = await self.display.ask_question("Please enter your Gemini API key:")
+        if not api_key:
+            await self.display.error("No API key provided.")
+            await self.exit()
+            return
+            
+        with open(DEFAULT_CONFIG_FILE, "r") as f:
+            content = f.read()
+            
+        content = content.replace("API-KEY-HERE", api_key.strip())
+        
+        with open(DEFAULT_CONFIG_FILE, "w") as f:
+            f.write(content)
+            
+        await self.display.info("API key saved to config file.")
+        
+        # Reload config
+        self.config = Config(DEFAULT_CONFIG_FILE)
 
     async def initialize(self):
 
         if not self.config.exists("model.api_key") or self.config.model.api_key == "API-KEY-HERE":
             await self.setup_api_key()
-        else:
-            # set up connetion to Gemini and MCP servers
-            self.gclient = genai.Client(api_key=self.config.model.api_key)
             
-            await self.display.info("Welcome to Redwood!")
-            async with asyncio.TaskGroup() as tg:
-                tg.create_task(self.print_help())
-                tg.create_task(self.register_tools())
-            await self.display.markdown(f"Using model: `{self.model_name}`")
+        if not self.config.exists("model.api_key") or self.config.model.api_key == "API-KEY-HERE":
+            return
+
+        # set up connetion to Gemini and MCP servers
+        self.gclient = genai.Client(api_key=self.config.model.api_key)
+        
+        await self.display.info("Welcome to Redwood!")
+        async with asyncio.TaskGroup() as tg:
+            tg.create_task(self.print_help())
+            tg.create_task(self.register_tools())
+        await self.display.markdown(f"Using model: `{self.model_name}`")
 
     async def print_tools(self, tools: list):
         
