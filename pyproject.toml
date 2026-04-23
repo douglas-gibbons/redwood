@@ -33,3 +33,6 @@ image_generator = "image_generator:run"
 
 [tool.flet.app]
 path = "src"
+
+[tool.setuptools.package-data]
+config = ["*.yaml"]

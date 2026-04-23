@@ -49,11 +49,16 @@ class Config:
         return True
     
     def create_config(self, config_file: str):
-        example_config = os.path.join(os.path.dirname(__file__), "..", "..", "redwood.example.yaml")
+        import pkgutil
+        example_data = pkgutil.get_data("config", "redwood.example.yaml")
+        if example_data is None:
+            console = Console()
+            console.print("[bold red]Error: Could not find redwood.example.yaml in the config package.[/bold red]")
+            sys.exit(1)
+            
         os.makedirs(os.path.dirname(config_file), exist_ok=True)
-        with open(example_config, "r") as src, open(config_file, "w") as dst:
-            dst.write(src.read())
-        
+        with open(config_file, "wb") as dst:
+            dst.write(example_data)
         
         console = Console()
         console.print("[bold yellow]No configuration file found.[/bold yellow]")
