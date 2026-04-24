@@ -225,8 +225,17 @@ class Display(DisplayInterface):
     async def tool_log(self, message: str):
         await self.gui.append_to_tool_log(message)
 
+    def _dialog(self, content: ft.Control, actions: list[ft.TextButton]) -> ft.AlertDialog:
+        return ft.AlertDialog(
+            content=content,
+            actions=actions,
+            actions_alignment=ft.MainAxisAlignment.END,
+            modal=True,
+        )
+
     async def ask_yes_no(self, question: str) -> bool:
         future = asyncio.Future()
+        content = ft.Markdown(question, extension_set=ft.MarkdownExtensionSet.GITHUB_WEB, auto_follow_links=True)
 
         async def on_yes(e):
             self.gui.page.pop_dialog()
@@ -235,42 +244,32 @@ class Display(DisplayInterface):
         async def on_no(e):
             self.gui.page.pop_dialog()
             future.set_result(False)
-
-        dlg = ft.AlertDialog(
-            title=ft.Text("Execution Confirmation"),
-            content=ft.Markdown(question, extension_set=ft.MarkdownExtensionSet.GITHUB_WEB, auto_follow_links=True),
-            actions=[
+        
+        actions=[
                 ft.TextButton("Yes", on_click=on_yes, autofocus=True),
                 ft.TextButton("No", on_click=on_no),
-            ],
-            actions_alignment=ft.MainAxisAlignment.END,
-            modal=True
-        )
-
+            ]
+        dlg = self._dialog(content, actions)
         self.gui.page.show_dialog(dlg)
         return await future
+
 
     async def ask_question(self, question: str) -> str:
         future = asyncio.Future()
 
-        text_field = ft.TextField(label="Answer", autofocus=True)
-
         async def on_submit(e):
             self.gui.page.pop_dialog()
             future.set_result(text_field.value)
-            
-        text_field.on_submit = on_submit
 
-        dlg = ft.AlertDialog(
-            title=ft.Markdown(question, extension_set=ft.MarkdownExtensionSet.GITHUB_WEB, auto_follow_links=True),
-            content=text_field,
-            actions=[
-                ft.TextButton("Submit", on_click=on_submit),
-            ],
-            actions_alignment=ft.MainAxisAlignment.END,
-            modal=True
-        )
+        text_field = ft.TextField(label="Answer", autofocus=True, on_submit=on_submit)
 
+        content = ft.Column([
+            ft.Markdown(question, extension_set=ft.MarkdownExtensionSet.GITHUB_WEB, auto_follow_links=True),
+            text_field
+        ], tight=True, horizontal_alignment=ft.CrossAxisAlignment.STRETCH)
+        
+        actions = [ft.TextButton("Submit", on_click=on_submit)]
+        dlg = self._dialog(content, actions)
         self.gui.page.show_dialog(dlg)
         
         async def _focus_field():
