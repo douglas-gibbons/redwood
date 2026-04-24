@@ -240,7 +240,7 @@ class Display(DisplayInterface):
             title=ft.Text("Execution Confirmation"),
             content=ft.Markdown(question, extension_set=ft.MarkdownExtensionSet.GITHUB_WEB, auto_follow_links=True),
             actions=[
-                ft.TextButton("Yes", on_click=on_yes),
+                ft.TextButton("Yes", on_click=on_yes, autofocus=True),
                 ft.TextButton("No", on_click=on_no),
             ],
             actions_alignment=ft.MainAxisAlignment.END,
