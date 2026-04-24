@@ -2,15 +2,13 @@ from importlib.resources import contents
 import json
 import os
 from google import genai
-from rich.markdown import Markdown
 from .display_interface import DisplayInterface
 import mcp_client
 import logging
 from config import Config
-import sys
 import asyncio
 
-DEFAULT_CONFIG_FILE = os.path.expanduser("~/.config/redwood.yaml")
+DEFAULT_CONFIG_FILE = os.path.expanduser("~/.config/redwood/redwood.yaml")
 
 logging.getLogger().handlers.clear()
 logger = logging.getLogger(__name__)
@@ -55,16 +53,8 @@ You can get an API key at [aistudio.google.com/api-keys](https://aistudio.google
             await self.display.error("No API key provided.")
             await self.exit()
             return
-
         
-        with open(DEFAULT_CONFIG_FILE, "r") as f:
-            content = f.read()
-            
-        content = content.replace("API-KEY-HERE", api_key.strip())
-        
-        with open(DEFAULT_CONFIG_FILE, "w") as f:
-            f.write(content)
-    
+        self.config.write_api_key(api_key)
         await self.display.info("API key saved to config file.")
         
         # Reload config
@@ -138,7 +128,7 @@ Help:         '/help' or '/?' to show this help message
 Exit:         '/exit' or '/x' to quit
 ```
 
-You can find the configuration file at `~/.config/redwood.yaml`. Feel free to modify it manually 
+You can find the configuration file at `~/.config/redwood/redwood.yaml`. Feel free to modify it manually 
 or simply instruct the agent to handle the updates for you. For instance, you could ask it to disable 
 tool execution prompts or request a rundown of all available configuration settings.
 """)
