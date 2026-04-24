@@ -55,11 +55,8 @@ You can get an API key at [aistudio.google.com/api-keys](https://aistudio.google
             await self.display.error("No API key provided.")
             await self.exit()
             return
-        else:
-            await self.display.info("""The API key has been added to the config file at ~/.config/redwood.yaml.
-The agent knows how to edit this file for you. If you want to change something, like prevent 
-prompts every time a tool is called, or add an MCP server, just ask the agent.""")
 
+        
         with open(DEFAULT_CONFIG_FILE, "r") as f:
             content = f.read()
             
@@ -67,7 +64,7 @@ prompts every time a tool is called, or add an MCP server, just ask the agent.""
         
         with open(DEFAULT_CONFIG_FILE, "w") as f:
             f.write(content)
-            
+    
         await self.display.info("API key saved to config file.")
         
         # Reload config
@@ -130,9 +127,9 @@ prompts every time a tool is called, or add an MCP server, just ask the agent.""
 
     async def print_help(self):
         await self.display.markdown("""
-```
 You can interact with the AI model and use various tools via MCP servers by typing these commands:                              
 
+```
 Tools:        '/tools', or '/t' to list available tools
 Reset:        '/reset', or '/r' to reset the conversation
 Conversation: '/conversation' or '/c' to show conversation history
@@ -141,7 +138,10 @@ Help:         '/help' or '/?' to show this help message
 Exit:         '/exit' or '/x' to quit
 ```
 
-        """)
+You can find the configuration file at `~/.config/redwood.yaml`. Feel free to modify it manually 
+or simply instruct the agent to handle the updates for you. For instance, you could ask it to disable 
+tool execution prompts or request a rundown of all available configuration settings.
+""")
 
     async def register_tools(self):
         

@@ -19,10 +19,11 @@ ui:
 token_storage:
   enabled: false
   location: ~/config/redwood_auth_tokens/ # Directory
-  # Make a new token storage key with
+  # You can make a new token storage key with
   # dd if=/dev/urandom bs=32 count=1 2>/dev/null | openssl base64`
   encryption_key: E/YIKS+62be/MlYpGHlrXW4lW/fgB/DzFx3SrPgsKJ0=
 
+# This section is for the agent MCP tools
 mcp:
 
   # Redwood Internal Tools
@@ -70,7 +71,7 @@ mcp:
 
   ## Filesystem
   - name: filesystem
-    ask: true
+    ask: true # ask the user before running tools
     command: npx
     args:
       - "-y"
@@ -78,21 +79,30 @@ mcp:
       - "/home"
 
   ## Atlassian
-  ##
-  ## opens a browser window for authentication
   # - name: atlassian
   #   ask: false
   #   url: https://mcp.atlassian.com/server/v1/mcp
 
-  # HTTP Example Tool with headers
+  # HTTP Example HTTP Tool with headers
   # - name: http-example
+  #   ask: true
   #   url: https://api.example.com/v1/stream
   #   headers:
   #     Authorization: Bearer API-KEY-HERE
 
-
+# The prompt is a set of instructions that the agent is given at the start of every conversation.
+#
+# If you take out the "Redwood Configuration" section of the prompt, it will not know
+# now to edit its configuration file for you
 prompt: |
   You are an AI personal assistant who helps a user with day-to-day tasks
+
+  # Redwood Configuration
+
+  Your configuration file is located at ~/ .config/redwood.yaml.
+  The configuration file contains sections for MCP servers, as well as this prompt.
+  You can help the user to edit this file for their needs.
+  The user will have to restart the agent for the changes to take effect (you must tell them this).
 
   # Remember
   
@@ -107,10 +117,3 @@ prompt: |
   * When generating images, use the image_generator tool
   * You can use img src tags to display images in your responses, like this: ![alt text](path/to/image.png)
   * Always let the user know where an image is saved when you generate one, so they can find it later
-
-  # Redwood Configuration
-
-  Your configuration file is located at ~/ .config/redwood.yaml.
-  The configuration file contains sections for MCP servers, as well as this prompt.
-  You can help the user to edit this file for their needs.
-  The user will have to restart the agent for the changes to take effect.
