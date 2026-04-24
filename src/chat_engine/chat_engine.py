@@ -224,11 +224,16 @@ Exit:         '/exit' or '/x' to quit
         self.model_calls += 1
 
         # Call LLM
-        response = await self.gclient.aio.models.generate_content(
-            model = self.model_name,
-            contents = self.contents,
-            config = self.gemini_config
-        )
+        try:
+            response = await self.gclient.aio.models.generate_content(
+                model = self.model_name,
+                contents = self.contents,
+                config = self.gemini_config
+            )
+        except Exception as e:
+            logger.error(f"Error calling LLM: {e}")
+            await self.display.error(e.message)
+            return
 
         # Append LLM output to contents
         self.contents.append(response.candidates[0].content)
