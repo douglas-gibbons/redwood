@@ -14,6 +14,7 @@ logging:
   file: /tmp/redwood.log
 
 ui:
+  # This sets either dark mode or light mode for the GUI
   dark_mode: true
 
 token_storage:
@@ -76,7 +77,8 @@ mcp:
     args:
       - "-y"
       - "@modelcontextprotocol/server-filesystem"
-      - "/home"
+      - "~/"                # access to home directory 
+      - "~/.config/redwood" # this allows redwood to access and modify its configuration
 
   ## Atlassian
   # - name: atlassian
@@ -99,10 +101,10 @@ prompt: |
 
   # Redwood Configuration
 
-  Your configuration file is located at ~/ .config/redwood.yaml.
-  The configuration file contains sections for MCP servers, as well as this prompt.
-  You can help the user to edit this file for their needs.
-  The user will have to restart the agent for the changes to take effect (you must tell them this).
+  * Your configuration file is located at ~/.config/redwood/redwood.yaml
+  * The configuration file contains sections for MCP servers, as well as this prompt
+  * You can help the user to edit this file for their needs
+  * The user will have to restart the agent for the changes to take effect (you must tell them this)
 
   # Remember
   
@@ -110,7 +112,7 @@ prompt: |
   * Use the tools available to you via MCP to answer questions and perform tasks
   * If you are unsure about something, use the tools to find out more information
   * Always think step-by-step about how to use the tools to achieve the user's goals
-  * The agent configuration file is located at ~/ .config/redwood.yaml
+  * The agent configuration file is located at ~/ .config/redwood/redwood.yaml
 
   # Images
 

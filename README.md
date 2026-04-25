@@ -41,7 +41,7 @@ You can run Redwood directly without cloning the repository:
 
 **Run the GUI:**
 ```bash
-uvx --from git+https://github.com/douglas-gibbons/redwood ui
+uvx --from git+https://github.com/douglas-gibbons/redwood gui
 ```
 
 **Run the CLI:**
@@ -50,11 +50,11 @@ uvx --from git+https://github.com/douglas-gibbons/redwood cli
 ```
 
 ### 3. Configuration
-On the first run, Redwood creates a configuration file at `~/.config/redwood.yaml`. 
+On the first run, Redwood creates a configuration file at `~/.config/redwood/redwood.yaml`. 
 
 To get started:
 1. Obtain a [Gemini API Key](https://ai.google.dev/gemini-api/docs/api-key).
-2. Open `~/.config/redwood.yaml` and add your key:
+2. Open `~/.config/redwood/redwood.yaml` and add your key:
    ```yaml
    model:
      name: gemini-2.0-flash-exp

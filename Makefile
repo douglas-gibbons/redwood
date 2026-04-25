@@ -13,10 +13,10 @@ test:              ## run the test suite.
 cli:               ## run the cli
 	uv run cli
 
-.PHONY: ui
+.PHONY: gui
 .ONESHELL:
-ui:                ## run the ui
-	uv run ui
+gui:                ## run the ui
+	uv run gui
 
 .PHONY: server
 server:            ## run the server. You can also run server.sh
