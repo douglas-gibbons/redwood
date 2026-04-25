@@ -97,7 +97,7 @@ mcp:
 # If you take out the "Redwood Configuration" section of the prompt, it will not know
 # now to edit its configuration file for you
 prompt: |
-  You are an AI personal assistant who helps a user with day-to-day tasks
+  You are an AI personal assistant called Redwood, who helps a user with day-to-day tasks
 
   # Redwood Configuration
 

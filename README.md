@@ -44,7 +44,7 @@ You can run Redwood directly without cloning the repository:
 uvx --from git+https://github.com/douglas-gibbons/redwood gui
 ```
 
-**Run the CLI:**
+**...or run the CLI:**
 ```bash
 uvx --from git+https://github.com/douglas-gibbons/redwood cli
 ```

@@ -131,6 +131,8 @@ Exit:         '/exit' or '/x' to quit
 You can find the configuration file at `~/.config/redwood/redwood.yaml`. Feel free to modify it manually 
 or simply instruct the agent to handle the updates for you. For instance, you could ask it to disable 
 tool execution prompts or request a rundown of all available configuration settings.
+                                    
+If you want to know what Redwood can do, just ask :)
 """)
 
     async def register_tools(self):
