@@ -13,3 +13,7 @@ wheels/
 *.db
 
 notes.md
+
+# packaging
+appimagetool*
+Redwood.AppDir
