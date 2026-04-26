@@ -1,5 +1,5 @@
 import flet as ft
-import ui
+import gui
 
 # Entry point for flet application
-ft.run(ui.main)
+ft.run(gui.main)

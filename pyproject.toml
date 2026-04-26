@@ -31,8 +31,25 @@ server = "server:run"
 agent = "agent:run"
 image_generator = "image_generator:run"
 
-[tool.flet.app]
-path = "src"
-
 [tool.setuptools.package-data]
 config = ["*.yaml"]
+
+# Flet Packaging
+
+[tool.flet.app]
+path = "src"
+product = "Redwood"
+artifact = "Redwood"
+exclude = [".git", ".venv"]
+
+[tool.flet.splash]
+color = "#ffffff"
+dark_color = "#333333"
+
+[tool.flet.app.boot_screen]
+show = true
+message = "Preparing Redwood for its first launch..."
+
+[tool.flet.app.startup_screen]
+show = true
+message = "Starting Redwood..."
