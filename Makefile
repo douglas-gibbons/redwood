@@ -47,6 +47,16 @@ package-linux:           ## build the Linux package
 .PHONY: package-macos
 .ONESHELL:
 package-macos:           ## build the macos package.
-
 	flet build macos
-	
+
+.PHONY: bump-major
+bump-major:           ## create a new semver git tag, bumping the major version
+	uv run bump major
+
+.PHONY: bump-minor
+bump-minor:           ## create a new semver git tag, bumping the minor version
+	uv run bump minor
+
+.PHONY: bump-patch
+bump-patch:           ## create a new semver git tag, bumping the patch version
+	uv run bump patch

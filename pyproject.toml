@@ -6,18 +6,19 @@ readme = "README.md"
 license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
-    "httpx>=0.28.1",
-    "mcp[cli]>=1.25.0",
     "beautifulsoup4>=4.14.3",
-    "markdownify>=1.2.2",
-    "pytest-asyncio>=1.3.0",
-    "fastmcp>=3.2.4",
-    "munch>=4.0.0",
-    "google-genai>=1.73.1",
     "diskcache>=5.6.3",
+    "fastmcp>=3.2.4",
+    "flet[all]>=0.84.0",
+    "google-genai>=1.73.1",
+    "httpx>=0.28.1",
+    "markdownify>=1.2.2",
+    "mcp[cli]>=1.25.0",
+    "munch>=4.0.0",
     "pathvalidate>=3.3.1",
     "pillow>=12.1.1",
-    "flet[all]>=0.84.0",
+    "pytest-asyncio>=1.3.0",
+    "setuptools>=82.0.1",
 ]
 
 [build-system]
@@ -30,6 +31,7 @@ gui = "gui:run"
 server = "server:run"
 agent = "agent:run"
 image_generator = "image_generator:run"
+bump = "bump:run"
 
 [tool.setuptools.package-data]
 config = ["*.yaml"]
