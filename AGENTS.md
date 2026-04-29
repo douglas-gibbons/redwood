@@ -14,21 +14,21 @@ There is no need to manually activate a virtual environment. Use `uv run` or the
 ### Common Commands
 - `make test` : Runs the test suite using `pytest`. Always run this after making changes to verify you haven't broken anything.
 - `make cli` : Runs the terminal-based CLI application.
-- `make ui` : Runs the Tkinter/Flet-based graphical user interface application.
+- `make gui` : Runs the Tkinter/Flet-based graphical user interface application.
 - `make server` : Runs the main MCP server (which includes various tools like database, time, web search).
 
 ### Configuration
-On first run, Redwood generates a configuration file at `~/.config/redwood.yaml` where the user defines their Gemini API key, configures MCP servers, and modifies prompts.
+On first run, Redwood generates a configuration file at `~/.config/redwood/redwood.yaml` where the user defines their Gemini API key, configures MCP servers, and modifies prompts.
 
 ## Project Structure
 
 The source code is located in the `src/` directory.
 
 - `src/cli/` - The entry point for the terminal-based CLI application.
-- `src/ui/` - The entry point for the graphical user interface application.
+- `src/gui/` - The entry point for the graphical user interface application.
 - `src/server/` - The main MCP server that exposes tools (database, scraping, time, cmd line, etc.) to the language model.
 - `src/chat_engine/` - Contains the core chat loop and logic used to communicate with the Gemini API. 
-- `src/config/` - Manages parsing and loading the `~/.config/redwood.yaml` settings.
+- `src/config/` - Manages parsing and loading the `~/.config/redwood/redwood.yaml` settings.
 - `src/database/` - Manages the SQLite database used by the MCP tools.
 - `src/mcp_client/` - Logic for the CLI/UI to connect to and communicate with MCP servers.
 - `src/image_generator/` - A separate MCP server dedicated to generating images.

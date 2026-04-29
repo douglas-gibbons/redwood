@@ -1,0 +1,13 @@
+# .github/workflows/ci.yaml
+name: CI Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  call-build:
+    uses: ./.github/workflows/_build.yaml
+    with:
+      artifact_version: "dev-${{ github.sha }}"
