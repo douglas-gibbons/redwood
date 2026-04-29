@@ -25,19 +25,19 @@ jobs:
 
           - name: linux
             runner: ubuntu-latest
-            build_cmd: "flet build linux --version ${{ inputs.artifact_version }}"
+            build_cmd: "flet build linux"
             artifact_path: build/linux
             needs_linux_deps: true
 
           - name: macos
             runner: macos-latest
-            build_cmd: "flet build macos --version ${{ inputs.artifact_suffix }}"
+            build_cmd: "flet build macos"
             artifact_path: build/macos
             needs_linux_deps: false
 
           - name: windows
             runner: windows-latest
-            build_cmd: "flet build windows --version {{ inputs.artifact_suffix }}"
+            build_cmd: "flet build windows"
             artifact_path: build/windows
             needs_linux_deps: false
 
