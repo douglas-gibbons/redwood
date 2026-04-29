@@ -2,6 +2,8 @@ name: Build Flet App
 
 on:
   push:
+    tags:
+      - 'v*'
   pull_request:
   workflow_dispatch:
 
@@ -23,19 +25,19 @@ jobs:
 
           - name: linux
             runner: ubuntu-latest
-            build_cmd: "flet build linux"
+            build_cmd: "flet build linux --version {{ github.ref_name }}"
             artifact_path: build/linux
             needs_linux_deps: true
 
           - name: macos
             runner: macos-latest
-            build_cmd: "flet build macos"
+            build_cmd: "flet build macos --version {{ github.ref_name }}"
             artifact_path: build/macos
             needs_linux_deps: false
 
           - name: windows
             runner: windows-latest
-            build_cmd: "flet build windows"
+            build_cmd: "flet build windows --version {{ github.ref_name }}"
             artifact_path: build/windows
             needs_linux_deps: false
 
@@ -67,7 +69,7 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v5.0.0
         with:
-          name: ${{ matrix.name }}-build-artifact
+          name: redwood-${{ matrix.name }}-${{ github.ref_name }}
           path: ${{ matrix.artifact_path }}
           if-no-files-found: error
           overwrite: false
