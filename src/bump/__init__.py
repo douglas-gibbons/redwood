@@ -10,7 +10,7 @@ class SemVer:
         self.patch = patch
 
     def __str__(self):
-        return f"{self.major}.{self.minor}.{self.patch}"
+        return f"v{self.major}.{self.minor}.{self.patch}"
 
     def __lt__(self, other):
         return (self.major, self.minor, self.patch) < (other.major, other.minor, other.patch)
