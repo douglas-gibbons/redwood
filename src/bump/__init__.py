@@ -88,7 +88,7 @@ def bump_tag(part):
     run_command(['git', 'tag', '-a', str(sv), '-m', f"Bumping version to {sv}"])
     
     # Push the new tag to origin
-    run_command(['git', 'push', 'origin', sv])
+    run_command(['git', 'push', 'origin', str(sv)])
     print(f"Successfully pushed {sv} to origin.")
 
 def run():
