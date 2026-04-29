@@ -35,12 +35,6 @@ jobs:
             artifact_path: build/macos
             needs_linux_deps: false
 
-          - name: windows
-            runner: windows-latest
-            build_cmd: "flet build windows"
-            artifact_path: build/windows
-            needs_linux_deps: false
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
