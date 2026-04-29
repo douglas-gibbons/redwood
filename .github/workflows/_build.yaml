@@ -63,7 +63,7 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v5.0.0
         with:
-          name: redwood-${{ matrix.name }}-{{ inputs.artifact_suffix }}
+          name: redwood-${{ matrix.name }}-${{ inputs.artifact_suffix }}
           path: ${{ matrix.artifact_path }}
           if-no-files-found: error
           overwrite: false
