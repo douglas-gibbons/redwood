@@ -26,13 +26,13 @@ jobs:
           - name: linux
             runner: ubuntu-latest
             build_cmd: "flet build linux"
-            artifact_path: build/linux
+            artifact_path: build/linux/redwood
             needs_linux_deps: true
 
           - name: macos
             runner: macos-latest
             build_cmd: "flet build macos"
-            artifact_path: build/macos
+            artifact_path: build/macos/redwood
             needs_linux_deps: false
 
     steps:
@@ -63,7 +63,7 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v5.0.0
         with:
-          name: redwood-${{ matrix.name }}-${{ inputs.artifact_suffix }}
+          name: redwood-${{ matrix.name }}-${{ inputs.artifact_version }}
           path: ${{ matrix.artifact_path }}
           if-no-files-found: error
           overwrite: false
