@@ -166,7 +166,14 @@ class GUI:
             ], spacing=4),
             bgcolor=bgcolor,
             border_radius=ft.border_radius.all(4),
+            border=ft.border.all(1, ft.Colors.OUTLINE_VARIANT),
             padding=8,
+            shadow=ft.BoxShadow(
+                spread_radius=1,
+                blur_radius=4,
+                color=ft.Colors.BLACK12,
+                offset=ft.Offset(2, 2),
+            ),
         )
 
         # Wrap in a directional container
@@ -193,7 +200,14 @@ class GUI:
             content=content,
             bgcolor=ft.Colors.SECONDARY_CONTAINER,
             border_radius=ft.border_radius.all(4),
+            border=ft.border.all(1, ft.Colors.OUTLINE_VARIANT),
             padding=8,
+            shadow=ft.BoxShadow(
+                spread_radius=1,
+                blur_radius=4,
+                color=ft.Colors.BLACK12,
+                offset=ft.Offset(2, 2),
+            ),
         )
         
         self.tool_logs.controls.insert(0, bubble)
