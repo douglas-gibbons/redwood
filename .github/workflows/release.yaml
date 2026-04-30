@@ -23,7 +23,7 @@ jobs:
         with:
           path: release-assets
           pattern: redwood-*
-          merge-multiple: false
+          merge-multiple: true
 
       - name: Release
         uses: softprops/action-gh-release@v2
