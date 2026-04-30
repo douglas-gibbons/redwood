@@ -32,8 +32,16 @@
 
 ### 1. Prerequisites
 Ensure you have `uv` installed:
+
+Mac Users:
+
 ```bash
 brew install uv
+```
+
+Linux users:
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
 ### 2. Launching Redwood
@@ -50,17 +58,9 @@ uvx --from git+https://github.com/douglas-gibbons/redwood cli
 ```
 
 ### 3. Configuration
-On the first run, Redwood creates a configuration file at `~/.config/redwood/redwood.yaml`. 
+On the first run, Redwood creates a configuration file at `~/.config/redwood/redwood.yaml` and prompts you for a Gemini API key which it adds to the file.
 
-To get started:
-1. Obtain a [Gemini API Key](https://ai.google.dev/gemini-api/docs/api-key).
-2. Open `~/.config/redwood/redwood.yaml` and add your key:
-   ```yaml
-   model:
-     name: gemini-2.0-flash-exp
-     api_key: YOUR_API_KEY_HERE
-   ```
-3. Configure your preferred MCP servers and customize the system prompt.
+You can configure any aspect of Redwood in this file, or ask Gemini (through Redwood) to do it for you.
 
 ---
 
