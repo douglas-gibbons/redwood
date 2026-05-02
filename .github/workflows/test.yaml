@@ -1,0 +1,22 @@
+name: Run Tests
+
+on:
+  pull_request:
+    branches: [ main ]  # Trigger on PRs targeting the 'main' branch
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up environment
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: Run make test
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          make test
