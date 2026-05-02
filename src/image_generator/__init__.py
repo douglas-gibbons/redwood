@@ -42,26 +42,20 @@ def generate_image(prompt: str, filename: str = "generated_image.jpg") -> str:
     client = genai.Client(api_key=config.model.api_key)
 
     try:
-        response = client.models.generate_images(
+        response = client.models.generate_content(
             model=IMAGE_MODEL,
-            prompt=prompt,
-            config=types.GenerateImagesConfig(
-                number_of_images=1,
-                output_mime_type="image/jpeg",
-                aspect_ratio="1:1"
-            )
+            contents=[prompt],
         )
 
-        if response.generated_images:
-            image_bytes = response.generated_images[0].image.image_bytes
-            pil_image = Image.open(io.BytesIO(image_bytes))
-            
-            os.makedirs(str(OUTPUT_DIR), exist_ok=True)
-            full_path = os.path.join(str(OUTPUT_DIR), str(filename))
-            pil_image.save(full_path)
-            return f"Image successfully generated and saved as {full_path}"
-        else:
-            return "No images were generated."
+        for part in response.parts:
+            if part.inline_data is not None:
+                os.makedirs(str(OUTPUT_DIR), exist_ok=True)
+                full_path = os.path.join(str(OUTPUT_DIR), str(filename))
+
+                image = part.as_image()
+                image.save(full_path)
+                return f"Image successfully generated and saved as {full_path}"
+        return "No images were generated."
     except Exception as e:
         return f"An error occurred during image generation: {e}"
 

@@ -51,7 +51,7 @@ mcp:
       - "run"
       - "image_generator"
       - "--model"
-      - "imagen-4.0-fast-generate-001"
+      - "gemini-3.1-flash-image-preview"
       - "--output-dir"
       - "~/Downloads"
 
