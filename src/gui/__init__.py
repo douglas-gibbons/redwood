@@ -219,7 +219,9 @@ class Display(DisplayInterface):
     def __init__(self, gui: GUI):
         self.gui = gui
 
-    async def quit(self):
+    async def quit(self, message: str = None):
+        if message:
+            await self.message_box(message)
         await self.gui.page.window.destroy()
         os._exit(0)
 
@@ -247,6 +249,20 @@ class Display(DisplayInterface):
             modal=True,
         )
 
+    async def message_box(self, message: str) -> bool:
+        future = asyncio.Future()
+        content = ft.Text(f"{message}")
+        async def on_ok(e):
+            self.gui.page.pop_dialog()
+            future.set_result(True)
+        
+        actions=[
+                ft.TextButton("OK", on_click=on_ok, autofocus=True)
+            ]
+        dlg = self._dialog(content, actions)
+        self.gui.page.show_dialog(dlg)
+        return await future
+    
     async def ask_yes_no(self, question: str) -> bool:
         future = asyncio.Future()
         content = ft.Markdown(question, extension_set=ft.MarkdownExtensionSet.GITHUB_WEB, auto_follow_links=True)

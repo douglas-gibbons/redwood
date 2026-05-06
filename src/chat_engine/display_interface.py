@@ -19,7 +19,7 @@ class DisplayInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def quit(self):
+    async def quit(self, message: str = None):
         raise NotImplementedError
 
     @abstractmethod

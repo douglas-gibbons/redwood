@@ -50,8 +50,7 @@ You can get an API key at [aistudio.google.com/api-keys](https://aistudio.google
 """)
         api_key = await self.display.ask_question("Please enter a Gemini API key. You can get create new API key at [aistudio.google.com/api-keys](https://aistudio.google.com/api-keys)")
         if not api_key:
-            await self.display.error("No API key provided.")
-            await self.exit()
+            await self.display.quit("No API key provided.")
             return
         
         self.config.write_api_key(api_key)
@@ -137,6 +136,8 @@ If you want to know what Redwood can do, just ask :)
 
     async def register_tools(self):
         
+        await self.display.info("Registering MCP servers...")
+
         self.mcp_servers = []
         for server_config in self.config.mcp:
             server = mcp_client.dict_to_server(server_config)
@@ -165,10 +166,6 @@ If you want to know what Redwood can do, just ask :)
                 disable=True
             ),
         )
-        
-    async def exit(self):
-        await self.display.info("Goodbye!")
-        await self.display.quit()
 
     async def reset_conversation(self):
         self.contents.clear()
@@ -180,7 +177,7 @@ If you want to know what Redwood can do, just ask :)
 
         """Handles slash commands. Returns True if a command was processed."""
         if user_input == "/exit" or user_input == "/x":
-            await self.exit()
+            await self.display.quit()
         elif user_input == "/tools" or user_input == "/t":
             await self.print_tools(self.tools)
         elif user_input == "/conversation" or user_input == "/c":
@@ -209,9 +206,7 @@ If you want to know what Redwood can do, just ask :)
 
         # Safety valve
         if self.model_calls >= int(self.config.max_model_calls):
-            await self.display.warn("Max model calls reached")
-            await self.display.info("This is a safety valve to catch costly looping. You can increase the limit in the config file if needed.")
-            await self.exit()        
+            await self.display.quit("Max model calls reached. This is a safety valve to catch costly looping. You can increase the limit in the config file if needed.")
 
         self.model_calls += 1
 

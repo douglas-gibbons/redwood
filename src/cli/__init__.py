@@ -37,7 +37,9 @@ class Display(DisplayInterface):
         self.console.print(Markdown(question))
         return input(">> ")
 
-    async def quit(self):
+    async def quit(self, message: str = None):
+        if message:
+            self.console.print(f"[bold red]{message}[/bold red]")
         sys.exit(0)
 
 
