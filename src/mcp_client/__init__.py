@@ -174,7 +174,10 @@ class MCPClient:
             async with client:
                 logger.debug("Executing tool " + full_tool_name + " with args " + str(args))
                 try:
-                    response = await client.call_tool(tool_name, args)
+                    response = await asyncio.wait_for(client.call_tool(tool_name, args), timeout=120.0)
+                except asyncio.TimeoutError:
+                    logger.error("Timeout calling tool " + full_tool_name)
+                    return toolResponse("error", "Timeout calling tool " + full_tool_name)
                 except Exception as e:
                     logger.error("Error calling tool " + full_tool_name + ": " + str(e))
                     return toolResponse("error", "Error calling tool " + full_tool_name + ": " + str(e))
