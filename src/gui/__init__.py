@@ -165,8 +165,8 @@ class GUI:
                 content
             ], spacing=4),
             bgcolor=bgcolor,
-            border_radius=ft.border_radius.all(4),
-            border=ft.border.all(1, ft.Colors.OUTLINE_VARIANT),
+            border_radius=ft.BorderRadius.all(4),
+            border=ft.Border.all(1, ft.Colors.OUTLINE_VARIANT),
             padding=8,
             shadow=ft.BoxShadow(
                 spread_radius=1,
@@ -199,8 +199,8 @@ class GUI:
         bubble = ft.Container(
             content=content,
             bgcolor=ft.Colors.SECONDARY_CONTAINER,
-            border_radius=ft.border_radius.all(4),
-            border=ft.border.all(1, ft.Colors.OUTLINE_VARIANT),
+            border_radius=ft.BorderRadius.all(4),
+            border=ft.Border.all(1, ft.Colors.OUTLINE_VARIANT),
             padding=8,
             shadow=ft.BoxShadow(
                 spread_radius=1,
