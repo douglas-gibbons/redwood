@@ -109,23 +109,23 @@ class GUI:
         # Select adaptive material colors based on role
         if is_user:
             bgcolor = ft.Colors.PRIMARY_CONTAINER
-            padding = ft.padding.only(left=80, top=5, bottom=5)
+            padding = ft.Padding(left=80, top=5, bottom=5)
             text_color = ft.Colors.ON_PRIMARY_CONTAINER
         elif sender == "Redwood":
             bgcolor = ft.Colors.SECONDARY_CONTAINER
-            padding = ft.padding.only(right=80, top=5, bottom=5)
+            padding = ft.Padding(right=80, top=5, bottom=5)
             text_color = ft.Colors.ON_SECONDARY_CONTAINER
         elif sender == "System":
             bgcolor = ft.Colors.TERTIARY_CONTAINER
-            padding = ft.padding.only(right=80, top=5, bottom=5)
+            padding = ft.Padding(right=80, top=5, bottom=5)
             text_color = ft.Colors.ON_TERTIARY_CONTAINER
         elif sender in ["Warning", "Error"]:
             bgcolor = ft.Colors.ERROR_CONTAINER
-            padding = ft.padding.only(right=80, top=5, bottom=5)
+            padding = ft.Padding(right=80, top=5, bottom=5)
             text_color = ft.Colors.ON_ERROR_CONTAINER
         else:
             bgcolor = ft.Colors.PRIMARY_CONTAINER
-            padding = ft.padding.only(right=80, top=5, bottom=5)
+            padding = ft.Padding(right=80, top=5, bottom=5)
             text_color = ft.Colors.ON_PRIMARY_CONTAINER
 
         # Render message content
