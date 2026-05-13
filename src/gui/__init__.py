@@ -129,16 +129,15 @@ class GUI:
             text_color = ft.Colors.ON_PRIMARY_CONTAINER
 
         # Render message content
-        if is_markdown:
-            # Markdown inherits default theme text colors, which generally adapt well.
-            content = ft.Markdown(
-                message, 
-                selectable=True,
-                extension_set=ft.MarkdownExtensionSet.GITHUB_WEB,
-                auto_follow_links=True
-            )
-        else:
-            content = ft.Text(f"{message}", color=text_color, selectable=True)
+        md_content = ft.Markdown(
+            message, 
+            selectable=True,
+            extension_set=ft.MarkdownExtensionSet.GITHUB_WEB,
+            auto_follow_links=True
+        )
+        text_content = ft.Text(f"{message}", color=text_color, selectable=True)
+        
+        content = md_content if is_markdown else text_content
 
         icon_name = None
         if is_user:
@@ -150,13 +149,41 @@ class GUI:
         elif sender in ["Warning", "Error"]:
             icon_name = ft.Icons.WARNING
             
+        def toggle_source(e):
+            if bubble.content.controls[1] == md_content:
+                bubble.content.controls[1] = text_content
+                toggle_btn.icon = ft.Icons.PREVIEW
+                toggle_btn.tooltip = "View Rendered Markdown"
+            else:
+                bubble.content.controls[1] = md_content
+                toggle_btn.icon = ft.Icons.CODE
+                toggle_btn.tooltip = "View Markdown Source"
+            self.page.update()
+
+        toggle_btn = ft.IconButton(
+            icon=ft.Icons.CODE if is_markdown else ft.Icons.PREVIEW,
+            icon_color=text_color,
+            icon_size=16,
+            tooltip="View Markdown Source" if is_markdown else "View Rendered Markdown",
+            on_click=toggle_source,
+            padding=0,
+            width=24,
+            height=24,
+            visible=is_markdown
+        )
+
         if icon_name:
-            header = ft.Row([
+            header_content = ft.Row([
                 ft.Icon(icon_name, size=16, color=text_color),
                 ft.Text(f"{sender}", size=12, color=text_color)
             ], spacing=5)
         else:
-            header = ft.Text(f"{sender}", size=12, color=text_color)
+            header_content = ft.Text(f"{sender}", size=12, color=text_color)
+
+        header = ft.Row(
+            [header_content, toggle_btn],
+            alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+        )
 
         # Build chat bubble
         bubble = ft.Container(
