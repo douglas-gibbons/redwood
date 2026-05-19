@@ -18,6 +18,11 @@ cli:               ## run the cli
 gui:                ## run the ui
 	uv run gui
 
+.PHONY: web
+.ONESHELL:
+web:                ## run the ui in a web browser
+	uv run web
+
 .PHONY: server
 server:            ## run the server. You can also run server.sh
 	uv run server

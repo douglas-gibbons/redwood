@@ -1,83 +1,42 @@
 # Running Redwood in Docker
 
-This guide explains how to build and run the Redwood GUI application within an isolated Docker container on Linux or macOS.
+This guide explains how to build and run the Redwood application within an isolated Docker container. The container runs a local web server, allowing you to access the GUI directly from your web browser.
 
 ## 1. Build the Image
 
-To get started, build the Docker container using the provided `Dockerfile`. This will install all system dependencies, including `uv`, `npx`, and required GTK/OpenGL graphics libraries.
+To get started, build the Docker container using the provided `Dockerfile`. This will install all system dependencies and the Redwood Python application.
 
 ```bash
-docker build -t redwood-gui .
+docker build -t redwood .
 ```
 
-## 2. Prepare the Host Environment & Run
+## 2. Run the Container
 
-Since Redwood is a graphical application, the Docker container needs a way to draw windows on your host machine's screen. The setup depends on your operating system.
+Start the container and map the internal web server port (8550) to your host machine:
 
-### Linux
+```bash
+docker run -it --rm -p 8550:8550 redwood
+```
 
-Linux natively uses X11 or Wayland, making it straightforward to pass the display socket and GPU device.
+If you want t include your local redwood configuration:
 
-1. **Authorize local connections**: 
-   ```bash
-   xhost +local:
-   ```
-   *(Note: If `xhost` is missing, install it via `sudo apt install x11-xserver-utils` or equivalent).*
+```bash
+docker run -it --rm -v ~/.config/redwood:/home/ubuntu/.config/redwood -p 8550:8550 redwood
+```
 
-2. **Run the Container**:
-   Launch the container, passing the display and GPU device for hardware-accelerated OpenGL rendering (required by the Flet engine).
-   ```bash
-   docker run -it --rm \
-     -e DISPLAY=$DISPLAY \
-     -v /tmp/.X11-unix:/tmp/.X11-unix \
-     --device /dev/dri \
-     redwood-gui
-   ```
 
-### macOS
 
-macOS requires an external X11 server like **XQuartz** to render Linux GUI apps from a Docker container. Hardware acceleration (`/dev/dri`) is not available, so it falls back to software rendering (llvmpipe).
+## 3. Access the GUI
 
-1. **Install and Configure XQuartz**:
-   ```bash
-   brew install --cask xquartz
-   ```
-   - Open **XQuartz** from your Applications folder.
-   - Go to **XQuartz -> Settings** (or Preferences) -> **Security** tab.
-   - Check the box for **"Allow connections from network clients"**.
-   - **Restart XQuartz** (or log out of your Mac and log back in) for the setting to take effect.
-
-2. **Authorize local connections**:
-   Open a terminal and authorize connections from your local machine:
-   ```bash
-   xhost +localhost
-   ```
-
-3. **Run the Container**:
-   Pass the `host.docker.internal` network address so the container can reach your Mac's XQuartz server.
-   ```bash
-   docker run -it --rm \
-     -e DISPLAY=host.docker.internal:0 \
-     redwood-gui
-   ```
+Once the container is running, open your web browser and navigate to [localhost:8550](http://localhost:8550).
 
 
 ## Troubleshooting
 
-### `cannot open display` or `Gtk-WARNING`
-If you encounter `cannot open display: :1` or similar GTK warnings, double-check that you ran `xhost +local:` on your host machine prior to starting the container.
+### Port Already in Use
+If you see an error indicating that port `8550` is already in use, you can map it to a different port on your host machine. For example, to use port `9000`:
 
-### Wayland Desktop Environments
-If you use Wayland (default on newer Ubuntu/Fedora) and the standard XWayland approach above fails, you may need to explicitly mount your Wayland socket as well:
 ```bash
-docker run -it --rm \
-  -e DISPLAY=$DISPLAY \
-  -e WAYLAND_DISPLAY=$WAYLAND_DISPLAY \
-  -v /tmp/.X11-unix:/tmp/.X11-unix \
-  -v /run/user/$(id -u)/wayland-0:/run/user/$(id -u)/wayland-0 \
-  --device /dev/dri \
-  redwood-gui
+docker run -it --rm -p 9000:8550 redwood
 ```
-
-### Missing OpenGL / ATK Errors
-The `Dockerfile` is pre-configured with Mesa graphics drivers, `libgles2`, and `at-spi2-core`. If you continue to see `No GL implementation is available` in the terminal output, ensure your host GPU drivers are correctly installed and that the `/dev/dri` directory exists on your host machine.
+Then access it at [localhost:9000](http://localhost:9000)]

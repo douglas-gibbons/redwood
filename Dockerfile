@@ -45,7 +45,4 @@ ENV PATH="/app/.venv/bin:$PATH"
 RUN python -c "import flet.utils; flet.utils.get_current_script_dir()" || true
 
 
-# To run this container, you will need to pass the X11 display socket and DISPLAY env var.
-# Example:
-# docker run -it --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix redwood-gui
-CMD ["gui"]
+CMD ["web", "--host", "0.0.0.0"]
