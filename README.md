@@ -57,6 +57,12 @@ uvx --from git+https://github.com/douglas-gibbons/redwood gui
 uvx --from git+https://github.com/douglas-gibbons/redwood cli
 ```
 
+**...or run the Web GUI:**
+```bash
+uvx --from git+https://github.com/douglas-gibbons/redwood web
+```
+This will start a local web server making the GUI accessible through your browser at [localhost:8550](http://localhost:8550).
+
 ### 3. Configuration
 On the first run, Redwood creates a configuration file at `~/.config/redwood/redwood.yaml` and prompts you for a Gemini API key which it adds to the file.
 
@@ -103,6 +109,8 @@ cd redwood
 
 ### Useful Commands
 - **Run CLI**: `make cli`
+- **Run GUI**: `make gui`
+- **Run Web GUI**: `make web`
 - **Run Server**: `make server`
 - **Run Tests**: `make test`
 - **Inspect MCP**: `npx @modelcontextprotocol/inspector make server`

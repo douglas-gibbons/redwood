@@ -28,6 +28,7 @@ build-backend = "setuptools.build_meta"
 [project.scripts]
 cli = "cli:run"
 gui = "gui:run"
+web = "gui:web_run"
 server = "server:run"
 agent = "agent:run"
 image_generator = "image_generator:run"

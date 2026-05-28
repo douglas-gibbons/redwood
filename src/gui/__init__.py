@@ -5,6 +5,7 @@ import flet as ft
 from chat_engine.chat_engine import ChatEngine
 from chat_engine.display_interface import DisplayInterface
 import os
+import argparse
 
 logger = logging.getLogger(__name__)
 
@@ -362,3 +363,11 @@ async def main(page: ft.Page):
 
 def run():
     ft.app(target=main)
+
+def web_run():
+    parser = argparse.ArgumentParser(description="Run the Redwood Web GUI")
+    parser.add_argument("--host", default="127.0.0.1", help="Host to listen on (default: 127.0.0.1)")
+    parser.add_argument("--port", type=int, default=8550, help="Port to listen on (default: 8550)")
+    args = parser.parse_args()
+
+    ft.app(target=main, view=ft.AppView.WEB_BROWSER, port=args.port, host=args.host)
