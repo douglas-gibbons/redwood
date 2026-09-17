@@ -6,7 +6,9 @@ from chat_engine.chat_engine import ChatEngine
 from chat_engine.display_interface import DisplayInterface
 import os
 import argparse
+from config import Config
 
+DEFAULT_CONFIG_FILE = os.path.expanduser("~/.config/redwood/redwood.yaml")
 logger = logging.getLogger(__name__)
 
 class GUI:
@@ -42,7 +44,7 @@ class GUI:
         self.chat = ft.ListView(expand=True, spacing=3, auto_scroll=False, reverse=True)
         self.tool_logs = ft.ListView(expand=True, spacing=3, auto_scroll=False, reverse=True)
         
-        self.send_button = ft.ElevatedButton(
+        self.send_button = ft.Button(
             "Send",
             on_click=self.send_button_click,
         )
@@ -199,7 +201,7 @@ class GUI:
             shadow=ft.BoxShadow(
                 spread_radius=1,
                 blur_radius=4,
-                color=ft.Colors.BLACK12,
+                color=ft.Colors.BLACK_12,
                 offset=ft.Offset(2, 2),
             ),
         )
@@ -233,7 +235,7 @@ class GUI:
             shadow=ft.BoxShadow(
                 spread_radius=1,
                 blur_radius=4,
-                color=ft.Colors.BLACK12,
+                color=ft.Colors.BLACK_12,
                 offset=ft.Offset(2, 2),
             ),
         )
@@ -342,32 +344,65 @@ class Display(DisplayInterface):
         return await future
 
 async def main(page: ft.Page):
+    logger.info("GUI main session starting...")
+    page.on_error = lambda e: logger.error(f"Flet Page error: {e.data}")
 
-    gui = GUI(page)
-    display = Display(gui)
-    engine = ChatEngine(display)
+    try:
+        gui = GUI(page)
+        display = Display(gui)
+        engine = ChatEngine(display)
 
-    if engine.config.exists("ui.dark_mode"):
-        page.theme_mode = ft.ThemeMode.DARK if engine.config.ui.dark_mode else ft.ThemeMode.LIGHT
-    else:
-        page.theme_mode = ft.ThemeMode.SYSTEM
+        if engine.config.exists("ui.dark_mode"):
+            page.theme_mode = ft.ThemeMode.DARK if engine.config.ui.dark_mode else ft.ThemeMode.LIGHT
+        else:
+            page.theme_mode = ft.ThemeMode.SYSTEM
 
-    gui.initialize(display, engine)
+        gui.initialize(display, engine)
+        page.update()
 
-    # Disable input while engine initializes
-    await gui.disable_input()
-    await engine.initialize()
-    await gui.enable_input()
+        # Disable input while engine initializes
+        await gui.disable_input()
+        logger.info("Initializing chat engine...")
+        await engine.initialize()
+        await gui.enable_input()
+        logger.info("Chat engine initialized successfully.")
+        page.update()
+    except Exception as e:
+        logger.error("Error in GUI main initialization", exc_info=True)
+        try:
+            page.clean()
+            page.add(
+                ft.Text("Initialization Error", size=20, color=ft.Colors.ERROR),
+                ft.Text(f"{e}", color=ft.Colors.ERROR),
+            )
+            page.update()
+        except Exception:
+            pass
+        raise
 
-    page.update()
+def _setup_logging():
+    config = Config(DEFAULT_CONFIG_FILE)
+    logging.getLogger().handlers.clear()
+    logging.basicConfig(
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        level=config.logging.level,
+        filemode='a',
+        filename=config.logging.file
+    )
+
 
 def run():
-    ft.app(target=main)
+    _setup_logging()
+    ft.run(main)
 
 def web_run():
+    _setup_logging()
     parser = argparse.ArgumentParser(description="Run the Redwood Web GUI")
     parser.add_argument("--host", default="127.0.0.1", help="Host to listen on (default: 127.0.0.1)")
     parser.add_argument("--port", type=int, default=8550, help="Port to listen on (default: 8550)")
     args = parser.parse_args()
 
-    ft.app(target=main, view=ft.AppView.WEB_BROWSER, port=args.port, host=args.host)
+    ft.run(main, view=ft.AppView.WEB_BROWSER, port=args.port, host=args.host)
+
+
+

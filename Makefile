@@ -3,10 +3,14 @@
 help:              ## show this help.
 	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'
 
+.PHONY: clean
+clean:              ## remove build artifacts
+	rm -rf build
+
 .PHONY: test
 .ONESHELL:
 test:              ## run the test suite.
-	uv run pytest
+	uv run python -m pytest
 
 .PHONY: cli
 .ONESHELL:
