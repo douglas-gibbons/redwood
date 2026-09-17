@@ -263,7 +263,7 @@ If you want to know what Redwood can do, just ask :)
                 content_resp = task.result()
                 function_parts.extend(content_resp.parts)
             
-            self.contents.append(genai.types.Content(role="function", parts=function_parts))
+            self.contents.append(genai.types.Content(role="user", parts=function_parts))
             
             # Loop back to get the model's response to the tool outputs
             await self.answer_call()
@@ -310,5 +310,5 @@ If you want to know what Redwood can do, just ask :)
             name = tool_name,
             response=response
         )
-        resp = genai.types.Content(role="function", parts=[function_response_part])
+        resp = genai.types.Content(role="user", parts=[function_response_part])
         return resp
