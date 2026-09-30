@@ -183,8 +183,28 @@ class MCPClient:
                     return toolResponse("error", "Error calling tool " + full_tool_name + ": " + str(e))
                 logger.debug("Received response from tool " + full_tool_name + ": " + str(response))
                 
-                if response.content is not None and len(response.content) > 0 and response.content[0].text is not None:
-                    return {"result": response.content[0].text}
+                if getattr(response, "isError", False):
+                    error_msg = ""
+                    if response.content:
+                        error_msg = "\n".join(
+                            item.text for item in response.content if getattr(item, "text", None)
+                        )
+                    return toolResponse("error", error_msg or "Tool reported an error")
+
+                if response.content:
+                    text_parts = [
+                        item.text for item in response.content if getattr(item, "text", None) is not None
+                    ]
+                    if text_parts:
+                        return {"result": "\n".join(text_parts)}
+                    else:
+                        contents = [
+                            item.model_dump() if hasattr(item, "model_dump") else str(item)
+                            for item in response.content
+                        ]
+                        return {"result": contents if len(contents) > 1 else contents[0]}
+                elif getattr(response, "structuredContent", None) is not None:
+                    return {"result": response.structuredContent}
                 else:
                     logger.debug("Tool " + full_tool_name + " returned no content")
                     return toolResponse("error", "tool returned no content")
