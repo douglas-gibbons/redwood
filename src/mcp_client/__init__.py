@@ -76,13 +76,14 @@ class TokenStorageConfig:
 
 class MCPClient:
     
-    def __init__(self, display: DisplayInterface, servers: list[Server], log_file: str | Path | None = None, token_storage_config: TokenStorageConfig | None = None):
+    def __init__(self, display: DisplayInterface, servers: list[Server], log_file: str | Path | None = None, token_storage_config: TokenStorageConfig | None = None, yolo_mode: bool = False):
 
         self.servers = servers
         self.log_file = Path(log_file) if log_file else None
         self.clients = {}
         self.token_storage_config = token_storage_config
         self.display = display
+        self.yolo_mode = yolo_mode
 
         # Set up token storage if enabled
         encrypted_storage = None
@@ -214,7 +215,9 @@ class MCPClient:
             return toolResponse("error", "User denied execution of tool " + full_tool_name)
 
     async def can_execute_tool(self, server_name, tool_name, args):
-        
+        if getattr(self, "yolo_mode", False):
+            return True
+
         for server in self.servers:
             if sanitize_name(server.name) == server_name:
                 if server.ask is None or server.ask == True:
