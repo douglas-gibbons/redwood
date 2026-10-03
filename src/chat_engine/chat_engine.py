@@ -37,6 +37,8 @@ class ChatEngine:
 
         # MCP servers
         self.mcp_servers = []
+        self.mcpc = None
+        self.yolo_mode: bool = False
 
         self.model_calls: int = 0
 
@@ -120,6 +122,7 @@ You can interact with the AI model and use various tools via MCP servers by typi
 
 ```
 Tools:        '/tools', or '/t' to list available tools
+Yolo:         '/yolo' or '/yolo on' to skip tool confirmation, '/yolo off' to re-enable
 Reset:        '/reset', or '/r' to reset the conversation
 Conversation: '/conversation' or '/c' to show conversation history
 Locate:       '/locate' or '/l' to tell the model to work in the current directory
@@ -154,7 +157,8 @@ If you want to know what Redwood can do, just ask :)
             display=self.display,
             servers=self.mcp_servers, 
             log_file=self.config.logging.file, 
-            token_storage_config=token_storage_config
+            token_storage_config=token_storage_config,
+            yolo_mode=self.yolo_mode
         )
         
         self.tools = await self.mcpc.list_tools()
@@ -174,28 +178,49 @@ If you want to know what Redwood can do, just ask :)
         await self.display.info("Conversation history reset")
 
     async def _handle_command(self, user_input: str) -> bool:
-
         """Handles slash commands. Returns True if a command was processed."""
-        if user_input == "/exit" or user_input == "/x":
+        parts = user_input.strip().split()
+        if not parts:
+            await self.display.warn("Unknown command: '/'. Type '/help' for a list of available commands.")
+            return False
+
+        cmd = parts[0].lower()
+        args = parts[1:]
+
+        if cmd in ("/exit", "/x"):
             await self.display.quit()
-        elif user_input == "/tools" or user_input == "/t":
+        elif cmd in ("/tools", "/t"):
             await self.print_tools(self.tools)
-        elif user_input == "/conversation" or user_input == "/c":
+        elif cmd in ("/conversation", "/c"):
             await self.print_conversation(self.contents)
-        elif user_input == "/locate" or user_input == "/l":
+        elif cmd in ("/locate", "/l"):
             await self.set_location(self.contents)
-        elif user_input == "/help" or user_input == "/?":
+        elif cmd in ("/help", "/?"):
             await self.print_help()
-        elif user_input == "/reset" or user_input == "/r":
+        elif cmd in ("/reset", "/r"):
             await self.reset_conversation()
+        elif cmd == "/yolo":
+            if not args or (len(args) == 1 and args[0].lower() == "on"):
+                self.yolo_mode = True
+                if self.mcpc:
+                    self.mcpc.yolo_mode = True
+                await self.display.info("YOLO mode enabled. Tool execution prompts are disabled.")
+            elif len(args) == 1 and args[0].lower() == "off":
+                self.yolo_mode = False
+                if self.mcpc:
+                    self.mcpc.yolo_mode = False
+                await self.display.info("YOLO mode disabled. Tool execution prompts are enabled.")
+            else:
+                await self.display.warn(f"Invalid option for /yolo. Usage: '/yolo', '/yolo on', or '/yolo off'.")
         else:
+            await self.display.warn(f"Unknown command: '{parts[0]}'. Type '/help' for a list of available commands.")
             return False
         return True
 
     async def answer_call(self, user_input: str | None = None):        
         logger.debug(f"answer_call received message: {user_input}")
 
-        if user_input is not None and user_input.startswith("/"):
+        if user_input is not None and user_input.strip().startswith("/"):
             await self._handle_command(user_input)
             return
 
