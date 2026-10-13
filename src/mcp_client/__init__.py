@@ -113,7 +113,8 @@ class MCPClient:
                 transport = StreamableHttpTransport(
                     url = server.url,
                     headers = server.headers,
-                    auth = OAuth(mcp_url = server.url, token_storage = encrypted_storage)
+                    # Only run oauth if headers are not provided
+                    auth = None if server.headers else OAuth(mcp_url = server.url, token_storage = encrypted_storage)
                 )
                 c = Client(transport)
 
